@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบเตรียมข้อมูลและแปลงไฟล์ EMP - Gosoft</title>
+    <!-- SheetJS สำหรับส่งออก Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: #ffffff;
+            width: 100%;
+            max-width: 1100px;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Header Bar with Logo */
+        .header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0066B2;
+            line-height: 1.2;
+        }
+
+        .brand-subtitle {
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        /* Nav Tabs */
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            border: none;
+            background: #e2e8f0;
+            font-size: 14px;
+            font-weight: 600;
+            color: #475569;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background-color: #0066B2;
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        h1 {
+            font-size: 18px;
+            margin-bottom: 6px;
+            color: #1a365d;
+        }
+
+        p.subtitle {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 20px;
+        }
+
+        /* Upload Area */
+        .upload-area {
+            border: 2px dashed #0066B2;
+            border-radius: 10px;
+            padding: 30px 20px;
+            text-align: center;
+            background-color: #f0f7ff;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .upload-area:hover {
+            background-color: #e0f0ff;
+        }
+
+        .upload-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        /* Buttons */
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            padding: 10px 18px;
+            background-color: #10b981;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: background-color 0.2s;
+        }
+
+        .btn:disabled {
+            background-color: #cbd5e1;
+            cursor: not-allowed;
+        }
+
+        .btn:hover:not(:disabled) {
+            background-color: #059669;
+        }
+
+        .btn-blue {
+            background-color: #0066B2;
+        }
+
+        .btn-blue:hover:not(:disabled) {
+            background-color: #004c85;
+        }
+
+        .btn-gray {
+            background-color: #64748b;
+        }
+
+        .btn-gray:hover:not(:disabled) {
+            background-color: #475569;
+        }
+
+        .btn-danger {
+            padding: 4px 8px;
+            background-color: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        .btn-danger:hover {
+            background-color: #dc2626;
+        }
+
+        /* Status & Preview */
+        .status {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #475569;
+            font-weight: 500;
+        }
+
+        .preview-box {
+            max-height: 180px;
+            overflow-x: auto;
+            overflow-y: auto;
+            background-color: #0f172a;
+            color: #38bdf8;
+            padding: 12px;
+            border-radius: 8px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 12px;
+            line-height: 1.5;
+            white-space: pre;
+            margin-top: 10px;
+        }
+
+        /* Editable Table Style */
+        .table-wrapper {
+            overflow-x: auto;
+            max-height: 400px;
+            margin-bottom: 15px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f1f5f9;
+            color: #334155;
+            padding: 8px 10px;
+            border: 1px solid #cbd5e1;
+            position: sticky;
+            top: 0;
+            white-space: nowrap;
+            z-index: 10;
+        }
+
+        td {
+            padding: 4px 6px;
+            border: 1px solid #e2e8f0;
+            white-space: nowrap;
+        }
+
+        td input {
+            width: 100%;
+            border: 1px solid transparent;
+            padding: 4px 6px;
+            font-size: 12px;
+            border-radius: 4px;
+            outline: none;
+            background: transparent;
+        }
+
+        td input:focus {
+            border-color: #0066B2;
+            background-color: #ffffff;
+            box-shadow: 0 0 0 2px rgba(0, 102, 178, 0.2);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Header Bar with Gosoft Logo -->
+        <div class="header-bar">
+            <div class="logo-container">
+                <svg width="140" height="36" viewBox="0 0 200 50" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="200" height="50" rx="8" fill="#0066B2"/>
+                    <text x="18" y="35" font-family="'Segoe UI', Arial, sans-serif" font-size="28" font-weight="bold" fill="#FFFFFF">GOSOFT</text>
+                    <circle cx="168" cy="25" r="7" fill="#ED1C24"/>
+                </svg>
+                <div>
+                    <div class="brand-title">POS Data Management</div>
+                    <div class="brand-subtitle">Gosoft (Thailand) Co., Ltd.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="nav-tabs">
+            <button class="tab-btn active" onclick="switchTab('convertTab')">🔄 แปลงไฟล์ Excel เป็น .EMP</button>
+            <button class="tab-btn" onclick="switchTab('templateTab')">✏️ หน้าจัดการและเตรียมข้อมูล (Edit & Export)</button>
+        </div>
+
+        <!-- TAB 1: แปลงไฟล์ -->
+        <div id="convertTab" class="tab-content active">
+            <h1>แปลงไฟล์ Excel เป็นไฟล์ EMP (.emp)</h1>
+            <p class="subtitle">ตัด Header ให้อัตโนมัติ | จัดรูปแบบวันที่ | เติมครบ 20 ฟิลด์ | เข้ารหัส Windows-874 (ANSI)</p>
+            
+            <div class="upload-area" id="dropZone" onclick="document.getElementById('fileInput').click()">
+                <div class="upload-icon">📁</div>
+                <p id="fileNameText">คลิกเพื่อเลือกไฟล์ Excel หรือลากไฟล์มาวางที่นี่</p>
+                <input type="file" id="fileInput" accept=".xlsx, .xls" onchange="handleFileSelect(event)">
+            </div>
+
+            <button class="btn btn-blue" id="convertBtn" onclick="convertAndDownload()" style="width: 100%;" disabled>⚡ แปลงไฟล์และดาวน์โหลด .emp</button>
+
+            <div class="status" id="statusText"></div>
+            <div id="previewHeader" style="display:none; margin-top:20px; font-weight:600; font-size:14px;">ตัวอย่างผลลัพธ์ไฟล์ .emp:</div>
+            <pre class="preview-box" id="previewBox" style="display:none;"></pre>
+        </div>
+
+        <!-- TAB 2: เตรียมข้อมูลและแก้ไข -->
+        <div id="templateTab" class="tab-content">
+            <h1>หน้าแก้ไขและจัดการข้อมูลพนักงาน (20 ฟิลด์)</h1>
+            <p class="subtitle">สามารถแก้ไขข้อมูลในตาราง เพิ่ม/ลบ แถว แล้วกดส่งออกเป็นไฟล์ .EMP หรือ Excel ได้ทันที</p>
+
+            <div class="btn-group">
+                <button class="btn" onclick="exportEditedToEmp()">⚡ ส่งออกเป็นไฟล์ .EMP</button>
+                <button class="btn btn-blue" onclick="downloadTemplateExcel()">📥 ส่งออกเป็น Excel (.xlsx)</button>
+                <button class="btn btn-gray" onclick="addNewRow()">➕ เพิ่มแถวพนักงาน</button>
+            </div>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr id="tableHeaderRow"></tr>
+                    </thead>
+                    <tbody id="tableBodyRow"></tbody>
+                </table>
+            </div>
+            <div class="status" id="editorStatusText">พร้อมแก้ไขข้อมูล (ปัจจุบันมี <span id="rowCountText">5</span> รายการ)</div>
+        </div>
+    </div>
+
+    <script>
+        const headers = [
+            "storeId", "storeName", "storeZone", "workType", "empType",
+            "empId", "idCard", "prefix", "positionEn", "deptCode",
+            "gender", "phone", "posCode", "positionTh", "status",
+            "startDate", "unused1", "birthDate", "unused2", "email"
+        ];
+
+        let editorData = [
+            ["09916", "CO-711", "CO-711", "1", "Full Time", "0991601", "1234561232701", "คุณ", "StoreManager", "NSS", "Female", "021234567", "101318", "ผู้จัดการร้าน", "Active", "01/11/2021", "", "22/08/1993", "", "SS0991601@cpall.store"],
+            ["09916", "CO-711", "CO-711", "1", "Full Time", "0991602", "1234561232701", "คุณ", "รักษาการผู้จัดการร้าน", "NSS", "Female", "021234567", "101337", "รักษาการผู้จัดการ", "Active", "01/11/2021", "", "22/08/1993", "", "SS0991602@cpall.store"],
+            ["09916", "CO-711", "CO-711", "1", "Full Time", "0991603", "1234561232701", "คุณ", "ผู้ช่วยผู้จัดการร้าน", "NSS", "Female", "021234567", "101332", "ผู้ช่วยผู้จัดการ", "Active", "01/11/2021", "", "22/08/1993", "", "SS0991603@cpall.store"],
+            ["09916", "CO-711", "CO-711", "1", "Full Time", "0991604", "1234561232701", "คุณ", "ผู้ช่วยฝึกหัด", "NSS", "Female", "021234567", "101316", "ผู้ช่วยฝึกหัด", "Active", "01/11/2021", "", "22/08/1993", "", "SS0991604@cpall.store"],
+            ["09916", "CO-711", "CO-711", "1", "Full Time", "0991605", "1234561232701", "คุณ", "พนักงานร้าน", "NSS", "Female", "021234567", "101341", "พนักงาน", "Active", "01/11/2021", "", "22/08/1993", "", "SS0991605@cpall.store"]
+        ];
+
+        let parsedRows = [];
+        let selectedFileName = 'EmployeeData';
+
+        // วาดตารางแก้ไขข้อมูล
+        function renderEditorTable() {
+            const headerRow = document.getElementById('tableHeaderRow');
+            const bodyRow = document.getElementById('tableBodyRow');
+            if (!headerRow || !bodyRow) return;
+
+            headerRow.innerHTML = '<th>จัดการ</th>' + headers.map((h, idx) => `<th>${idx + 1}. ${h}</th>`).join('');
+            
+            bodyRow.innerHTML = editorData.map((row, rIdx) => {
+                let cols = row.map((cell, cIdx) => `
+                    <td><input type="text" value="${cell}" oninput="updateCellData(${rIdx}, ${cIdx}, this.value)"></td>
+                `).join('');
+                return `<tr><td style="text-align:center;"><button class="btn-danger" onclick="deleteRow(${rIdx})">ลบ</button></td>${cols}</tr>`;
+            }).join('');
+
+            const rowCountEl = document.getElementById('rowCountText');
+            if (rowCountEl) rowCountEl.textContent = editorData.length;
+        }
+
+        function updateCellData(rIdx, cIdx, value) {
+            if (editorData[rIdx]) editorData[rIdx][cIdx] = value;
+        }
+
+        function addNewRow() {
+            const storeId = editorData.length > 0 ? editorData[0][0] : "09916";
+            const newEmpNum = String(editorData.length + 1).padStart(2, '0');
+            const newEmpId = `${storeId}${newEmpNum}`;
+            
+            const newRow = [
+                storeId, "CO-711", "CO-711", "1", "Full Time",
+                newEmpId, "1234561232701", "คุณ", "พนักงานร้าน", "NSS",
+                "Female", "021234567", "101341", "พนักงาน", "Active",
+                "01/11/2021", "", "22/08/1993", "", `SS${newEmpId}@cpall.store`
+            ];
+            
+            editorData.push(newRow);
+            renderEditorTable();
+        }
+
+        function deleteRow(rIdx) {
+            editorData.splice(rIdx, 1);
+            renderEditorTable();
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+            const targetTab = document.getElementById(tabId);
+            if (targetTab) targetTab.classList.add('active');
+            if (event && event.target) event.target.classList.add('active');
+        }
+
+        function encodeWindows874(str) {
+            const buffer = new Uint8Array(str.length);
+            for (let i = 0; i < str.length; i++) {
+                const code = str.charCodeAt(i);
+                if (code < 128) {
+                    buffer[i] = code;
+                } else if (code >= 0x0E01 && code <= 0x0E5B) {
+                    buffer[i] = code - 0x0E01 + 0xA1;
+                } else {
+                    buffer[i] = 63;
+                }
+            }
+            return buffer;
+        }
+
+        function formatEmpLine(row) {
+            let processedRow = [];
+            for (let i = 0; i < 20; i++) {
+                let val = row[i] !== undefined && row[i] !== null ? String(row[i]).trim() : "";
+                processedRow.push(val);
+            }
+            return processedRow.join("|");
+        }
+
+        // ส่งออกเป็น .EMP จากหน้าแก้ไข
+        function exportEditedToEmp() {
+            if (editorData.length === 0) {
+                alert("ไม่มีข้อมูลสำหรับส่งออก");
+                return;
+            }
+
+            const empContentString = editorData.map(row => formatEmpLine(row)).join("\r\n");
+            const ansiBuffer = encodeWindows874(empContentString);
+
+            const storeId = editorData[0][0] || "EMP_DATA";
+            const blob = new Blob([ansiBuffer], { type: 'text/plain;charset=windows-874' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `${storeId}.emp`;
+            link.click();
+            URL.revokeObjectURL(link.href);
+
+            const statusEl = document.getElementById('editorStatusText');
+            if (statusEl) statusEl.textContent = `ส่งออกไฟล์ ${storeId}.emp สำเร็จเรียบร้อยแล้ว!`;
+        }
+
+        // ส่งออกเป็น Excel จากหน้าแก้ไข
+        function downloadTemplateExcel() {
+            const wsData = [headers, ...editorData];
+            const ws = XLSX.utils.aoa_to_sheet(wsData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "EMP_Data");
+            XLSX.writeFile(wb, "EMP_Employee_Data.xlsx");
+        }
+
+        // ฟังก์ชันอ่านไฟล์ Excel ฝั่งแปลงไฟล์
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            selectedFileName = file.name.replace(/\.[^/.]+$/, "");
+            const nameEl = document.getElementById('fileNameText');
+            if (nameEl) nameEl.textContent = `ไฟล์ที่เลือก: ${file.name}`;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array', cellDates: true, dateNF: 'dd/mm/yyyy' });
+                
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                const rawData = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "", raw: false });
+                
+                parsedRows = rawData.filter(row => {
+                    const rowText = row.map(c => String(c).trim()).join(" ").toLowerCase();
+                    if (!rowText || rowText.includes('storeid') || rowText.includes('mandatory')) return false;
+                    return row.some(cell => String(cell).trim() !== "");
+                }).map(row => row.map(c => String(c !== null && c !== undefined ? c : '').trim()));
+
+                if (parsedRows.length > 0) {
+                    editorData = parsedRows;
+                    renderEditorTable();
+                    
+                    const convertBtn = document.getElementById('convertBtn');
+                    if (convertBtn) convertBtn.disabled = false;
+
+                    const statusEl = document.getElementById('statusText');
+                    if (statusEl) statusEl.textContent = `อ่านข้อมูลสำเร็จ ทั้งหมด ${parsedRows.length} รายการ (ส่งข้อมูลไปที่หน้าแก้ไขแล้ว)`;
+                    
+                    renderPreview();
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function renderPreview() {
+            if (parsedRows.length === 0) return;
+            const previewLines = parsedRows.slice(0, 5).map(row => formatEmpLine(row));
+            const previewText = previewLines.join("\n") + (parsedRows.length > 5 ? "\n..." : "");
+
+            const headerEl = document.getElementById('previewHeader');
+            if (headerEl) headerEl.style.display = 'block';
+
+            const previewBox = document.getElementById('previewBox');
+            if (previewBox) {
+                previewBox.style.display = 'block';
+                previewBox.textContent = previewText;
+            }
+        }
+
+        function convertAndDownload() {
+            if (!parsedRows || parsedRows.length === 0) return;
+            const empContentString = parsedRows.map(row => formatEmpLine(row)).join("\r\n");
+            const ansiBuffer = encodeWindows874(empContentString);
+
+            const blob = new Blob([ansiBuffer], { type: 'text/plain;charset=windows-874' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `${selectedFileName}.emp`;
+            link.click();
+            URL.revokeObjectURL(link.href);
+
+            const statusEl = document.getElementById('statusText');
+            if (statusEl) statusEl.textContent = 'ดาวน์โหลดไฟล์ .emp เรียบร้อยแล้ว!';
+        }
+
+        // แสดงตารางครั้งแรก
+        renderEditorTable();
+    </script>
+</body>
+</html>

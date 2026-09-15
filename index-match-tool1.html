@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>ตัวจับคู่ข้อมูล</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<style>
+  :root{
+    --ink:#1c2620;
+    --ink-soft:#4a5850;
+    --paper:#f7f6f1;
+    --panel:#ffffff;
+    --line:#dbd9cf;
+    --accent:#2f6f5e;
+    --accent-soft:#e4efe9;
+    --warn:#a8492f;
+    --warn-soft:#f6e4dd;
+    --mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+    --sans: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  }
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--sans);
+    padding:28px 20px 60px;
+  }
+  .wrap{max-width:1040px;margin:0 auto;}
+
+  header{margin-bottom:28px;}
+  header .kicker{
+    font-family:var(--mono);
+    font-size:12.5px;
+    color:var(--accent);
+    letter-spacing:0.02em;
+  }
+  header h1{
+    font-size:26px;
+    font-weight:600;
+    margin:4px 0 8px;
+    letter-spacing:-0.01em;
+  }
+  header p{
+    color:var(--ink-soft);
+    font-size:14.5px;
+    line-height:1.6;
+    max-width:640px;
+    margin:0;
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:18px;
+    margin-bottom:18px;
+  }
+  @media (max-width:800px){ .grid{grid-template-columns:1fr;} }
+
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:18px 18px 16px;
+  }
+  .panel h2{
+    font-size:14.5px;
+    font-weight:600;
+    margin:0 0 4px;
+  }
+  .panel .hint{
+    font-size:12.5px;
+    color:var(--ink-soft);
+    margin:0 0 10px;
+    line-height:1.5;
+  }
+  textarea{
+    width:100%;
+    min-height:150px;
+    resize:vertical;
+    border:1px solid var(--line);
+    border-radius:7px;
+    padding:10px 11px;
+    font-family:var(--mono);
+    font-size:12.5px;
+    line-height:1.55;
+    background:#fbfbf8;
+    color:var(--ink);
+  }
+  textarea:focus{outline:2px solid var(--accent); outline-offset:1px;}
+
+  .filerow{
+    margin-top:9px;
+    display:flex;
+    align-items:center;
+    gap:9px;
+    font-size:12.5px;
+    color:var(--ink-soft);
+  }
+  .filerow input[type=file]{font-size:12px; max-width:100%;}
+
+  .colrow{
+    display:flex;
+    gap:10px;
+    margin-top:12px;
+    flex-wrap:wrap;
+  }
+  .field{flex:1; min-width:130px;}
+  .field label{
+    display:block;
+    font-size:11.5px;
+    color:var(--ink-soft);
+    margin-bottom:4px;
+    font-family:var(--mono);
+  }
+  select{
+    width:100%;
+    padding:7px 8px;
+    border:1px solid var(--line);
+    border-radius:6px;
+    background:#fbfbf8;
+    font-size:13px;
+    color:var(--ink);
+    font-family:var(--sans);
+  }
+
+  .actions{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin:22px 0 6px;
+  }
+  button.run{
+    background:var(--ink);
+    color:#fff;
+    border:none;
+    padding:11px 22px;
+    border-radius:7px;
+    font-size:14px;
+    font-weight:500;
+    cursor:pointer;
+    font-family:var(--sans);
+  }
+  button.run:hover{background:#000;}
+  button.run:disabled{background:#b9b6aa; cursor:not-allowed;}
+
+  button.ghost{
+    background:none;
+    border:1px solid var(--line);
+    color:var(--ink);
+    padding:10px 16px;
+    border-radius:7px;
+    font-size:13.5px;
+    cursor:pointer;
+    font-family:var(--sans);
+  }
+  button.ghost:hover{border-color:var(--ink);}
+
+  .status{font-size:13px; color:var(--ink-soft);}
+  .status.err{color:var(--warn);}
+
+  .resultwrap{
+    margin-top:20px;
+    border:1px solid var(--line);
+    border-radius:10px;
+    background:var(--panel);
+    overflow:hidden;
+  }
+  .resulthead{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:13px 16px;
+    border-bottom:1px solid var(--line);
+    background:#fbfaf6;
+  }
+  .resulthead h3{font-size:14px; margin:0; font-weight:600;}
+  .resulthead .counts{font-size:12.5px; color:var(--ink-soft); font-family:var(--mono);}
+
+  .tablescroll{max-height:420px; overflow:auto;}
+  table{width:100%; border-collapse:collapse; font-size:13px;}
+  thead th{
+    position:sticky; top:0;
+    background:#fbfaf6;
+    text-align:left;
+    padding:9px 12px;
+    border-bottom:1px solid var(--line);
+    font-weight:600;
+    font-size:12px;
+  }
+  tbody td{
+    padding:8px 12px;
+    border-bottom:1px solid #ece9de;
+    font-family:var(--mono);
+    font-size:12.5px;
+  }
+  tbody tr:last-child td{border-bottom:none;}
+  .cell-miss{
+    color:var(--warn);
+    background:var(--warn-soft);
+    font-style:normal;
+  }
+  .badge-ok{
+    display:inline-block;
+    font-size:11px;
+    font-family:var(--mono);
+    padding:1px 7px;
+    border-radius:20px;
+    background:var(--accent-soft);
+    color:var(--accent);
+  }
+  .badge-miss{
+    display:inline-block;
+    font-size:11px;
+    font-family:var(--mono);
+    padding:1px 7px;
+    border-radius:20px;
+    background:var(--warn-soft);
+    color:var(--warn);
+  }
+
+  .empty{
+    padding:40px 20px;
+    text-align:center;
+    color:var(--ink-soft);
+    font-size:13.5px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="kicker">DATA MATCH</div>
+    <h1>ตัวจับคู่ข้อมูล</h1>
+    <p>วางตารางสองชุด เลือกคอลัมน์ที่ใช้จับคู่และคอลัมน์ที่ต้องการดึงค่า ระบบจะทำหน้าที่เหมือนสูตร INDEX + MATCH ให้อัตโนมัติ — ไม่ต้องพิมพ์สูตรเอง</p>
+  </header>
+
+  <div class="grid">
+    <div class="panel">
+      <h2>ตารางค้นหา (แหล่งข้อมูล)</h2>
+      <p class="hint">ตารางที่มีคำตอบอยู่ในนั้น — แถวแรกเป็นชื่อหัวคอลัมน์ คั่นด้วย Tab หรือ Comma</p>
+      <textarea id="sourceInput" placeholder="ชื่อสินค้า	ราคา	สต๊อก
+แอปเปิล	45	120
+กล้วย	20	300
+ส้ม	35	80"></textarea>
+      <div class="filerow">
+        <input type="file" id="sourceFile" accept=".csv,.tsv,.txt">
+        <span>หรืออัปโหลดไฟล์ CSV</span>
+      </div>
+      <div class="colrow">
+        <div class="field">
+          <label>คอลัมน์คีย์ (ใช้จับคู่)</label>
+          <select id="sourceKeyCol"><option>—</option></select>
+        </div>
+        <div class="field">
+          <label>คอลัมน์ที่ต้องการดึงค่า</label>
+          <select id="sourceValCol"><option>—</option></select>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>รายการที่ต้องการค้นหา</h2>
+      <p class="hint">รายการค่าที่ต้องการนำไปหาในตารางค้นหา แถวแรกเป็นชื่อหัวคอลัมน์</p>
+      <textarea id="lookupInput" placeholder="ชื่อสินค้า
+ส้ม
+แอปเปิล
+มะม่วง"></textarea>
+      <div class="filerow">
+        <input type="file" id="lookupFile" accept=".csv,.tsv,.txt">
+        <span>หรืออัปโหลดไฟล์ CSV</span>
+      </div>
+      <div class="colrow">
+        <div class="field">
+          <label>คอลัมน์คีย์ (ใช้จับคู่)</label>
+          <select id="lookupKeyCol"><option>—</option></select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="run" id="runBtn">จับคู่ข้อมูล</button>
+    <span class="status" id="status"></span>
+  </div>
+
+  <div class="resultwrap" id="resultWrap" style="display:none;">
+    <div class="resulthead">
+      <h3>ผลลัพธ์</h3>
+      <div style="display:flex; align-items:center; gap:14px;">
+        <span class="counts" id="counts"></span>
+        <button class="ghost" id="exportBtn">ดาวน์โหลด CSV</button>
+      </div>
+    </div>
+    <div class="tablescroll">
+      <table>
+        <thead><tr id="resultHeadRow"></tr></thead>
+        <tbody id="resultBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="empty" id="emptyState">ยังไม่มีผลลัพธ์ — กรอกข้อมูลสองฝั่งด้านบนแล้วกด "จับคู่ข้อมูล"</div>
+
+</div>
+
+<script>
+let sourceRows = [], sourceHeaders = [];
+let lookupRows = [], lookupHeaders = [];
+let lastResults = null;
+
+function detectDelimiter(text){
+  const firstLine = text.split(/\r?\n/)[0] || "";
+  if (firstLine.includes("\t")) return "\t";
+  return ",";
+}
+
+function parseText(text){
+  const delim = detectDelimiter(text);
+  const parsed = Papa.parse(text.trim(), { delimiter: delim, skipEmptyLines: true });
+  const data = parsed.data;
+  if (!data.length) return { headers: [], rows: [] };
+  const headers = data[0].map(h => (h || "").trim());
+  const rows = data.slice(1).map(r => {
+    const obj = {};
+    headers.forEach((h, i) => obj[h] = (r[i] !== undefined ? r[i] : "").trim());
+    return obj;
+  });
+  return { headers, rows };
+}
+
+function fillSelect(sel, headers, placeholder){
+  sel.innerHTML = "";
+  const ph = document.createElement("option");
+  ph.textContent = placeholder;
+  ph.value = "";
+  sel.appendChild(ph);
+  headers.forEach(h => {
+    const opt = document.createElement("option");
+    opt.value = h; opt.textContent = h;
+    sel.appendChild(opt);
+  });
+}
+
+function refreshSource(){
+  const text = document.getElementById("sourceInput").value;
+  const { headers, rows } = parseText(text);
+  sourceHeaders = headers; sourceRows = rows;
+  fillSelect(document.getElementById("sourceKeyCol"), headers, "เลือกคอลัมน์คีย์");
+  fillSelect(document.getElementById("sourceValCol"), headers, "เลือกคอลัมน์ผลลัพธ์");
+}
+
+function refreshLookup(){
+  const text = document.getElementById("lookupInput").value;
+  const { headers, rows } = parseText(text);
+  lookupHeaders = headers; lookupRows = rows;
+  fillSelect(document.getElementById("lookupKeyCol"), headers, "เลือกคอลัมน์คีย์");
+}
+
+document.getElementById("sourceInput").addEventListener("input", refreshSource);
+document.getElementById("lookupInput").addEventListener("input", refreshLookup);
+
+document.getElementById("sourceFile").addEventListener("change", (e) => {
+  const f = e.target.files[0];
+  if (!f) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    document.getElementById("sourceInput").value = ev.target.result;
+    refreshSource();
+  };
+  reader.readAsText(f);
+});
+
+document.getElementById("lookupFile").addEventListener("change", (e) => {
+  const f = e.target.files[0];
+  if (!f) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    document.getElementById("lookupInput").value = ev.target.result;
+    refreshLookup();
+  };
+  reader.readAsText(f);
+});
+
+function setStatus(msg, isErr){
+  const el = document.getElementById("status");
+  el.textContent = msg || "";
+  el.className = "status" + (isErr ? " err" : "");
+}
+
+document.getElementById("runBtn").addEventListener("click", () => {
+  refreshSource();
+  refreshLookup();
+
+  const sKey = document.getElementById("sourceKeyCol").value;
+  const sVal = document.getElementById("sourceValCol").value;
+  const lKey = document.getElementById("lookupKeyCol").value;
+
+  if (!sourceRows.length || !lookupRows.length){
+    setStatus("กรุณากรอกข้อมูลทั้งสองฝั่งก่อน", true);
+    return;
+  }
+  if (!sKey || !sVal || !lKey){
+    setStatus("กรุณาเลือกคอลัมน์คีย์และคอลัมน์ผลลัพธ์ให้ครบ", true);
+    return;
+  }
+
+  // build lookup map, case-insensitive trimmed match, last-write-wins like INDEX/MATCH exact
+  const map = new Map();
+  sourceRows.forEach(r => {
+    const k = (r[sKey] || "").toLowerCase();
+    if (!map.has(k)) map.set(k, r[sVal]);
+  });
+
+  let matched = 0, missed = 0;
+  const results = lookupRows.map(r => {
+    const k = (r[lKey] || "").toLowerCase();
+    const found = map.has(k);
+    if (found) matched++; else missed++;
+    return {
+      key: r[lKey],
+      value: found ? map.get(k) : null,
+      found
+    };
+  });
+
+  lastResults = { results, sVal, lKey };
+  renderResults(results, lKey, sVal, matched, missed);
+  setStatus("");
+});
+
+function renderResults(results, lKey, sVal, matched, missed){
+  document.getElementById("emptyState").style.display = "none";
+  document.getElementById("resultWrap").style.display = "block";
+  document.getElementById("counts").textContent = `พบ ${matched} · ไม่พบ ${missed} · ทั้งหมด ${results.length}`;
+
+  const headRow = document.getElementById("resultHeadRow");
+  headRow.innerHTML = `<th>${escapeHtml(lKey)}</th><th>${escapeHtml(sVal)}</th><th>สถานะ</th>`;
+
+  const body = document.getElementById("resultBody");
+  body.innerHTML = "";
+  results.forEach(r => {
+    const tr = document.createElement("tr");
+    const badge = r.found
+      ? `<span class="badge-ok">พบ</span>`
+      : `<span class="badge-miss">ไม่พบ</span>`;
+    const valCell = r.found
+      ? escapeHtml(r.value)
+      : `<span class="cell-miss">#N/A</span>`;
+    tr.innerHTML = `<td>${escapeHtml(r.key)}</td><td>${valCell}</td><td>${badge}</td>`;
+    body.appendChild(tr);
+  });
+}
+
+function escapeHtml(s){
+  if (s === null || s === undefined) return "";
+  return String(s).replace(/[&<>"']/g, c => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[c]));
+}
+
+document.getElementById("exportBtn").addEventListener("click", () => {
+  if (!lastResults) return;
+  const { results, sVal, lKey } = lastResults;
+  const rows = [[lKey, sVal, "สถานะ"]];
+  results.forEach(r => rows.push([r.key, r.found ? r.value : "#N/A", r.found ? "พบ" : "ไม่พบ"]));
+  const csv = rows.map(row => row.map(c => {
+    const s = String(c ?? "");
+    return /[",\n]/.test(s) ? '"' + s.replace(/"/g,'""') + '"' : s;
+  }).join(",")).join("\n");
+  const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = "matched_results.csv";
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+// init with placeholder data parsed
+refreshSource();
+refreshLookup();
+</script>
+</body>
+</html>

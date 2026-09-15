@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ระบบคลังคู่มือ PDF (PDF Knowledge Management Hub)</title>
+  <!-- PDF.js Core Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    :root {
+      --bg-primary: #f8fafc;
+      --bg-sidebar: #ffffff;
+      --bg-viewer: #475569;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+      --accent-color: #4f46e5;
+      --accent-hover: #4338ca;
+      --item-hover: #f1f5f9;
+      --item-active: #eef2ff;
+      --card-bg: #ffffff;
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    }
+
+    [data-theme="dark"] {
+      --bg-primary: #0f172a;
+      --bg-sidebar: #1e293b;
+      --bg-viewer: #020617;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border-color: #334155;
+      --accent-color: #6366f1;
+      --accent-hover: #4f46e5;
+      --item-hover: #334155;
+      --item-active: #312e81;
+      --card-bg: #1e293b;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; transition: background-color 0.2s, border-color 0.2s; }
+    body { display: flex; height: 100vh; background-color: var(--bg-primary); color: var(--text-main); overflow: hidden; }
+
+    /* Sidebar */
+    .sidebar { width: 350px; background-color: var(--bg-sidebar); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 20px; flex-shrink: 0; position: relative; z-index: 10; transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .sidebar.collapsed { margin-left: -350px; }
+    
+    .sidebar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .sidebar-header h2 { font-size: 1.2rem; color: var(--text-main); font-weight: 700; display: flex; align-items: center; gap: 10px; }
+    .sidebar-header h2 i { color: var(--accent-color); }
+
+    .theme-toggle { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.1rem; padding: 6px; border-radius: 6px; }
+    .theme-toggle:hover { color: var(--text-main); background-color: var(--item-hover); }
+
+    .search-box { position: relative; margin-bottom: 15px; }
+    .search-input { width: 100%; padding: 10px 12px 10px 38px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.9rem; outline: none; background-color: var(--bg-primary); color: var(--text-main); }
+    .search-input:focus { border-color: var(--accent-color); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2); }
+    .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.9rem; }
+
+    .drop-zone { border: 2px dashed var(--border-color); border-radius: 10px; padding: 18px; text-align: center; background-color: var(--bg-primary); cursor: pointer; margin-bottom: 15px; transition: all 0.2s; }
+    .drop-zone:hover, .drop-zone.dragover { border-color: var(--accent-color); background-color: var(--item-active); }
+    .drop-zone i { font-size: 1.8rem; color: var(--accent-color); margin-bottom: 8px; }
+    .drop-zone p { font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; }
+    .btn-upload-text { font-weight: 600; color: var(--text-main); font-size: 0.9rem; }
+    #pdf-input { display: none; }
+
+    .doc-list { list-style: none; overflow-y: auto; flex-grow: 1; padding-right: 4px; }
+    .doc-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; margin-bottom: 8px; border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; background-color: var(--card-bg); transition: all 0.2s; box-shadow: var(--shadow-sm); }
+    .doc-item:hover { background-color: var(--item-hover); transform: translateY(-1px); }
+    .doc-item.active { background-color: var(--item-active); border-color: var(--accent-color); }
+
+    .doc-info { display: flex; align-items: center; gap: 12px; overflow: hidden; width: 68%; }
+    .doc-icon { color: #ef4444; font-size: 1.2rem; }
+    .doc-text { display: flex; flex-direction: column; overflow: hidden; }
+    .doc-title { font-size: 0.88rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-main); }
+    .doc-date { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
+
+    .doc-actions { display: flex; gap: 6px; }
+    .doc-actions button { background: none; border: none; cursor: pointer; font-size: 0.85rem; padding: 6px; border-radius: 4px; color: var(--text-muted); transition: 0.2s; }
+    .btn-edit:hover { color: #d97706; background-color: rgba(217, 119, 6, 0.1); }
+    .btn-delete:hover { color: #dc2626; background-color: rgba(220, 38, 38, 0.1); }
+
+    /* Viewer Area */
+    .main-content { flex-grow: 1; display: flex; flex-direction: column; background-color: var(--bg-viewer); position: relative; }
+    
+    .viewer-header { padding: 12px 24px; background-color: var(--bg-sidebar); border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; box-shadow: var(--shadow-sm); }
+    .header-left { display: flex; align-items: center; gap: 15px; }
+    .btn-toggle-sidebar { background: none; border: 1px solid var(--border-color); color: var(--text-main); padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 0.9rem; }
+    .btn-toggle-sidebar:hover { background-color: var(--item-hover); }
+    .doc-current-title { font-weight: 600; color: var(--text-main); font-size: 1rem; max-width: 400px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .viewer-toolbar { display: flex; gap: 8px; align-items: center; background-color: var(--bg-primary); padding: 4px 8px; border-radius: 8px; border: 1px solid var(--border-color); }
+    .viewer-toolbar button { padding: 6px 10px; background-color: var(--bg-sidebar); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; transition: 0.2s; }
+    .viewer-toolbar button:hover { background-color: var(--accent-color); color: white; border-color: var(--accent-color); }
+    .toolbar-divider { width: 1px; height: 18px; background-color: var(--border-color); margin: 0 4px; }
+
+    .viewer-container { flex-grow: 1; overflow: auto; display: flex; justify-content: center; align-items: flex-start; padding: 25px; }
+    #pdf-canvas { box-shadow: var(--shadow-md); background-color: #ffffff; max-width: 100%; border-radius: 4px; transition: transform 0.2s ease; }
+
+    .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #94a3b8; }
+    .empty-state i { font-size: 3.5rem; margin-bottom: 15px; color: #64748b; }
+    .empty-state p { font-size: 1.05rem; font-weight: 500; }
+
+    @media print {
+      body * { visibility: hidden; }
+      #pdf-canvas, #pdf-canvas * { visibility: visible; }
+      #pdf-canvas { position: absolute; left: 0; top: 0; }
+    }
+  </style>
+</head>
+<body data-theme="light">
+
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h2><i class="fa-solid fa-book-bookmark"></i> คลังคู่มือ PDF</h2>
+      <button class="theme-toggle" onclick="toggleTheme()" title="สลับโหมด มืด/สว่าง">
+        <i class="fa-solid fa-moon" id="theme-icon"></i>
+      </button>
+    </div>
+    
+    <div class="search-box">
+      <i class="fa-solid fa-magnifying-glass search-icon"></i>
+      <input type="text" id="search-input" class="search-input" placeholder="ค้นหาชื่อคู่มือ..." oninput="handleSearch()">
+    </div>
+
+    <div class="drop-zone" id="drop-zone" onclick="document.getElementById('pdf-input').click()">
+      <i class="fa-solid fa-cloud-arrow-up"></i>
+      <br>
+      <span class="btn-upload-text">+ เพิ่มไฟล์ PDF</span>
+      <p>คลิก หรือ ลากไฟล์ PDF มาวางที่นี่</p>
+      <input type="file" id="pdf-input" accept="application/pdf" multiple onchange="handleFileSelect(event)">
+    </div>
+
+    <ul class="doc-list" id="doc-list"></ul>
+  </div>
+
+  <!-- Main Viewer Content -->
+  <div class="main-content">
+    <div class="viewer-header">
+      <div class="header-left">
+        <button class="btn-toggle-sidebar" onclick="toggleSidebar()" title="ซ่อน/แสดง เมนู">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+        <span class="doc-current-title" id="viewer-header">เลือกคู่มือเพื่อแสดงเอกสาร</span>
+      </div>
+
+      <div class="viewer-toolbar" id="viewer-toolbar" style="display: none;">
+        <button onclick="prevPage()"><i class="fa-solid fa-chevron-left"></i></button>
+        <span style="font-size: 0.85rem; color: var(--text-main); font-weight: 600;">
+          <span id="page-num">1</span> / <span id="page-count">1</span>
+        </span>
+        <button onclick="nextPage()"><i class="fa-solid fa-chevron-right"></i></button>
+        
+        <div class="toolbar-divider"></div>
+        
+        <button onclick="zoomOut()"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+        <span id="zoom-level" style="font-size: 0.85rem; color: var(--text-main); font-weight: 600;">100%</span>
+        <button onclick="zoomIn()"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+        
+        <div class="toolbar-divider"></div>
+
+        <button onclick="rotatePDF()" title="หมุนเอกสาร 90 องศา"><i class="fa-solid fa-rotate-right"></i></button>
+        <button onclick="printPDF()" title="พิมพ์เอกสาร"><i class="fa-solid fa-print"></i> พิมพ์</button>
+      </div>
+    </div>
+
+    <div class="viewer-container" id="viewer-container">
+      <div class="empty-state" id="empty-state">
+        <i class="fa-regular fa-file-pdf"></i>
+        <p>กรุณาเลือกหรือ Import คู่มือ PDF เพื่อเปิดใช้งาน</p>
+      </div>
+      <canvas id="pdf-canvas" style="display: none;"></canvas>
+    </div>
+  </div>
+
+  <script>
+    // ปิดการเรียก Worker CDN เพื่อความเสถียร 100%
+    if (window.pdfjsLib) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = '';
+    }
+
+    const DB_NAME = 'PDFManualsDB';
+    const STORE_NAME = 'pdf_files';
+    let db = null;
+    let pdfFiles = [];
+    let currentDocId = null;
+    let currentPdfDoc = null;
+    let pageNum = 1;
+    let pageRendering = false;
+    let pageNumPending = null;
+    let scale = 1.2;
+    let rotation = 0;
+
+    const canvas = document.getElementById('pdf-canvas');
+    const ctx = canvas.getContext('2d');
+
+    // Database Setup
+    function initDB() {
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, 1);
+        request.onupgradeneeded = (e) => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains(STORE_NAME)) {
+            db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+          }
+        };
+        request.onsuccess = (e) => {
+          db = e.target.result;
+          resolve();
+        };
+        request.onerror = (e) => reject(e.target.error);
+      });
+    }
+
+    async function loadDocuments() {
+      const tx = db.transaction(STORE_NAME, 'readonly');
+      const store = tx.objectStore(STORE_NAME);
+      const request = store.getAll();
+      request.onsuccess = () => {
+        pdfFiles = request.result || [];
+        renderDocList();
+      };
+    }
+
+    async function saveDocument(doc) {
+      const tx = db.transaction(STORE_NAME, 'readwrite');
+      const store = tx.objectStore(STORE_NAME);
+      store.put(doc);
+    }
+
+    async function deleteDocumentFromDB(id) {
+      const tx = db.transaction(STORE_NAME, 'readwrite');
+      const store = tx.objectStore(STORE_NAME);
+      store.delete(id);
+    }
+
+    // Process Files Input
+    async function processFiles(files) {
+      for (let file of files) {
+        if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
+          const newDoc = {
+            id: Date.now() + Math.random().toString(36).substr(2, 4),
+            name: file.name,
+            file: file,
+            createdAt: new Date().toLocaleDateString('th-TH')
+          };
+          pdfFiles.push(newDoc);
+          await saveDocument(newDoc);
+          selectDoc(newDoc.id);
+        } else {
+          alert(`ไฟล์ ${file.name} ไม่ใช่ PDF`);
+        }
+      }
+      renderDocList();
+    }
+
+    function handleFileSelect(e) {
+      processFiles(e.target.files);
+      e.target.value = '';
+    }
+
+    // Drag and Drop
+    const dropZone = document.getElementById('drop-zone');
+    ['dragenter', 'dragover'].forEach(name => {
+      dropZone.addEventListener(name, (e) => { e.preventDefault(); dropZone.classList.add('dragover'); }, false);
+    });
+    ['dragleave', 'drop'].forEach(name => {
+      dropZone.addEventListener(name, (e) => { e.preventDefault(); dropZone.classList.remove('dragover'); }, false);
+    });
+    dropZone.addEventListener('drop', (e) => {
+      processFiles(e.dataTransfer.files);
+    });
+
+    // Render Doc List Sidebar
+    function renderDocList(filterText = '') {
+      const docList = document.getElementById('doc-list');
+      docList.innerHTML = '';
+      const filtered = pdfFiles.filter(d => d.name.toLowerCase().includes(filterText.toLowerCase()));
+
+      filtered.forEach(doc => {
+        const li = document.createElement('li');
+        li.className = `doc-item ${doc.id === currentDocId ? 'active' : ''}`;
+        li.onclick = () => selectDoc(doc.id);
+
+        li.innerHTML = `
+          <div class="doc-info">
+            <i class="fa-solid fa-file-pdf doc-icon"></i>
+            <div class="doc-text">
+              <span class="doc-title" title="${doc.name}">${doc.name}</span>
+              <span class="doc-date">${doc.createdAt}</span>
+            </div>
+          </div>
+          <div class="doc-actions">
+            <button class="btn-edit" onclick="editDoc(event, '${doc.id}')" title="แก้ไขชื่อ"><i class="fa-solid fa-pen"></i></button>
+            <button class="btn-delete" onclick="deleteDoc(event, '${doc.id}')" title="ลบ"><i class="fa-solid fa-trash-can"></i></button>
+          </div>
+        `;
+        docList.appendChild(li);
+      });
+    }
+
+    function handleSearch() {
+      renderDocList(document.getElementById('search-input').value);
+    }
+
+    function getArrayBufferFromFile(fileOrBlob) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsArrayBuffer(fileOrBlob);
+      });
+    }
+
+    // Render Page PDF
+    function renderPage(num) {
+      pageRendering = true;
+      currentPdfDoc.getPage(num).then((page) => {
+        const viewport = page.getViewport({ scale: scale, rotation: rotation });
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+
+        const renderContext = {
+          canvasContext: ctx,
+          viewport: viewport
+        };
+        const renderTask = page.render(renderContext);
+
+        renderTask.promise.then(() => {
+          pageRendering = false;
+          if (pageNumPending !== null) {
+            renderPage(pageNumPending);
+            pageNumPending = null;
+          }
+        });
+      });
+
+      document.getElementById('page-num').textContent = num;
+      document.getElementById('zoom-level').textContent = `${Math.round(scale * 100 / 1.2)}%`;
+    }
+
+    function queueRenderPage(num) {
+      if (pageRendering) {
+        pageNumPending = num;
+      } else {
+        renderPage(num);
+      }
+    }
+
+    function prevPage() {
+      if (pageNum <= 1) return;
+      pageNum--;
+      queueRenderPage(pageNum);
+    }
+
+    function nextPage() {
+      if (pageNum >= currentPdfDoc.numPages) return;
+      pageNum++;
+      queueRenderPage(pageNum);
+    }
+
+    function zoomIn() {
+      if (!currentPdfDoc) return;
+      scale += 0.2;
+      queueRenderPage(pageNum);
+    }
+
+    function zoomOut() {
+      if (!currentPdfDoc || scale <= 0.6) return;
+      scale -= 0.2;
+      queueRenderPage(pageNum);
+    }
+
+    function rotatePDF() {
+      if (!currentPdfDoc) return;
+      rotation = (rotation + 90) % 360;
+      queueRenderPage(pageNum);
+    }
+
+    function printPDF() {
+      window.print();
+    }
+
+    // Select Document
+    async function selectDoc(id) {
+      currentDocId = id;
+      const doc = pdfFiles.find(item => item.id === id);
+      if (!doc) return;
+
+      document.getElementById('viewer-header').textContent = doc.name;
+      document.getElementById('empty-state').style.display = 'none';
+      canvas.style.display = 'block';
+      document.getElementById('viewer-toolbar').style.display = 'flex';
+
+      try {
+        let arrayBuffer;
+        if (doc.file instanceof Blob) {
+          arrayBuffer = await getArrayBufferFromFile(doc.file);
+        } else if (doc.blob instanceof Blob) {
+          arrayBuffer = await getArrayBufferFromFile(doc.blob);
+        } else if (doc.data) {
+          arrayBuffer = doc.data;
+        } else {
+          throw new Error("ไม่พบข้อมูลไฟล์ PDF");
+        }
+
+        const typedarray = new Uint8Array(arrayBuffer);
+        currentPdfDoc = await pdfjsLib.getDocument({ data: typedarray }).promise;
+        
+        document.getElementById('page-count').textContent = currentPdfDoc.numPages;
+        pageNum = 1;
+        rotation = 0;
+        renderPage(pageNum);
+      } catch (err) {
+        console.error(err);
+        alert('เกิดข้อผิดพลาดในการเปิดไฟล์ PDF');
+      }
+
+      renderDocList(document.getElementById('search-input').value);
+    }
+
+    async function editDoc(event, id) {
+      event.stopPropagation();
+      const doc = pdfFiles.find(item => item.id === id);
+      if (doc) {
+        const newName = prompt('แก้ไขชื่อคู่มือ:', doc.name);
+        if (newName && newName.trim() !== '') {
+          doc.name = newName.trim();
+          await saveDocument(doc);
+          renderDocList(document.getElementById('search-input').value);
+          if (currentDocId === id) {
+            document.getElementById('viewer-header').textContent = doc.name;
+          }
+        }
+      }
+    }
+
+    async function deleteDoc(event, id) {
+      event.stopPropagation();
+      if (confirm('คุณต้องการลบคู่มือนี้ใช่หรือไม่?')) {
+        pdfFiles = pdfFiles.filter(item => item.id !== id);
+        await deleteDocumentFromDB(id);
+        
+        if (currentDocId === id) {
+          currentDocId = null;
+          currentPdfDoc = null;
+          document.getElementById('viewer-header').textContent = 'เลือกคู่มือเพื่อแสดงเอกสาร';
+          document.getElementById('viewer-toolbar').style.display = 'none';
+          canvas.style.display = 'none';
+          document.getElementById('empty-state').style.display = 'flex';
+        }
+        renderDocList(document.getElementById('search-input').value);
+      }
+    }
+
+    // Toggle Sidebar & Theme
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('collapsed');
+    }
+
+    function toggleTheme() {
+      const body = document.body;
+      const themeIcon = document.getElementById('theme-icon');
+      if (body.getAttribute('data-theme') === 'light') {
+        body.setAttribute('data-theme', 'dark');
+        themeIcon.className = 'fa-solid fa-sun';
+      } else {
+        body.setAttribute('data-theme', 'light');
+        themeIcon.className = 'fa-solid fa-moon';
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      await initDB();
+      await loadDocuments();
+    });
+  </script>
+</body>
+</html>

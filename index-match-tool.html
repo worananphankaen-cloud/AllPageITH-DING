@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>ตัวจับคู่ข้อมูล</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root{
+    --bg-deep:#050810;
+    --bg-panel:#111a2e;
+    --bg-panel-alt:#0c1424;
+    --bg-input:#0a1120;
+    --line:rgba(255,255,255,0.09);
+    --line-strong:rgba(255,255,255,0.17);
+    --text:#f2f5fb;
+    --text-soft:#a7b1c7;
+    --text-faint:#6b7690;
+    --accent:#1483ff;
+    --accent-2:#5d4dfc;
+    --accent-glow:rgba(20,131,255,0.45);
+    --accent-soft:rgba(20,131,255,0.14);
+    --warn:#ff5d73;
+    --warn-soft:rgba(255,93,115,0.14);
+    --shadow-md: 0 18px 40px -20px rgba(0,0,0,0.7);
+    --shadow-glow: 0 0 0 1px rgba(20,131,255,0.25), 0 12px 30px -12px rgba(20,131,255,0.35);
+    --mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+    --sans: "Inter", "Helvetica Neue", Arial, sans-serif;
+    --display: "Poppins", "Inter", sans-serif;
+    --r-sm: 8px;
+    --r-md: 12px;
+    --r-lg: 18px;
+  }
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    min-height:100vh;
+    background:
+      radial-gradient(900px 500px at 85% -8%, rgba(93,77,252,0.22), transparent 60%),
+      radial-gradient(1100px 600px at -10% 10%, rgba(20,131,255,0.20), transparent 55%),
+      linear-gradient(180deg, #070b16 0%, var(--bg-deep) 40%, #030509 100%);
+    color:var(--text);
+    font-family:var(--sans);
+    padding:40px 20px 80px;
+  }
+  .wrap{max-width:1100px;margin:0 auto;}
+
+  /* header */
+  header{margin-bottom:32px;}
+  header .titlerow{display:flex; align-items:center; gap:14px; margin-bottom:10px;}
+  .brandmark{
+    width:44px; height:44px;
+    border-radius:13px;
+    background:linear-gradient(155deg, var(--accent), var(--accent-2));
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:var(--shadow-glow);
+    flex:none;
+  }
+  .brandmark img{
+    width:100%;
+    height:100%;
+    padding:6px;
+    border-radius:13px;
+    object-fit:contain;
+    display:block;
+  }
+  header h1{
+    font-family:var(--display);
+    font-size:29px;
+    font-weight:700;
+    margin:0;
+    letter-spacing:-0.01em;
+    color:#ffffff;
+  }
+  header p{
+    color:var(--text-soft);
+    font-size:14.5px;
+    line-height:1.65;
+    max-width:620px;
+    margin:0;
+  }
+
+  /* step panels */
+  .grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:18px;
+    margin-bottom:18px;
+    align-items:start;
+  }
+  @media (max-width:840px){ .grid{grid-template-columns:1fr;} }
+
+  .panel{
+    background:linear-gradient(180deg, var(--bg-panel), var(--bg-panel-alt));
+    border:1px solid var(--line);
+    border-radius:var(--r-lg);
+    padding:22px 22px 20px;
+    box-shadow:var(--shadow-md);
+  }
+  .panel .stephead{
+    display:flex;
+    align-items:center;
+    gap:11px;
+    margin-bottom:5px;
+  }
+  .stepnum{
+    width:24px; height:24px;
+    border-radius:50%;
+    background:linear-gradient(155deg, var(--accent), var(--accent-2));
+    color:#fff;
+    font-family:var(--mono);
+    font-size:12px;
+    font-weight:600;
+    display:flex; align-items:center; justify-content:center;
+    flex:none;
+    box-shadow:0 4px 14px -4px var(--accent-glow);
+  }
+  .panel h2{
+    font-family:var(--display);
+    font-size:16px;
+    font-weight:600;
+    margin:0;
+    color:#ffffff;
+  }
+  .panel .hint{
+    font-size:12.5px;
+    color:var(--text-faint);
+    margin:0 0 14px 35px;
+    line-height:1.55;
+  }
+  textarea{
+    width:100%;
+    min-height:148px;
+    resize:vertical;
+    border:1px solid var(--line);
+    border-radius:var(--r-sm);
+    padding:11px 13px;
+    font-family:var(--mono);
+    font-size:12.5px;
+    line-height:1.6;
+    background:var(--bg-input);
+    color:var(--text);
+    transition:border-color .15s ease, box-shadow .15s ease;
+  }
+  textarea::placeholder{color:var(--text-faint);}
+  textarea:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft);}
+
+  /* file picker */
+  .filerow{
+    margin-top:12px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-size:12.5px;
+    color:var(--text-faint);
+    flex-wrap:wrap;
+  }
+  .filebtn{
+    position:relative;
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+    padding:9px 16px;
+    border:1px solid var(--line-strong);
+    border-radius:999px;
+    background:rgba(255,255,255,0.04);
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--text);
+    cursor:pointer;
+    transition:border-color .15s ease, background .15s ease, box-shadow .15s ease;
+  }
+  .filebtn:hover{border-color:var(--accent); background:var(--accent-soft); box-shadow:0 0 0 3px rgba(20,131,255,0.12);}
+  .filebtn input[type=file]{
+    position:absolute; inset:0; opacity:0; cursor:pointer;
+  }
+  .filename{font-size:12px; color:var(--text-faint); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:200px;}
+
+  .sheetrow{
+    margin-top:13px;
+    display:none;
+  }
+  .sheetrow.show{display:block;}
+  .sheetrow label{
+    display:block;
+    font-size:11.5px;
+    color:var(--text-faint);
+    margin-bottom:5px;
+    font-family:var(--mono);
+  }
+
+  .colrow{
+    display:flex;
+    gap:10px;
+    margin-top:14px;
+    flex-wrap:wrap;
+    align-items:flex-end;
+  }
+  .field{flex:1; min-width:130px;}
+  .field label{
+    display:block;
+    font-size:11.5px;
+    color:var(--text-faint);
+    margin-bottom:5px;
+    font-family:var(--mono);
+  }
+  select{
+    width:100%;
+    padding:9px 10px;
+    border:1px solid var(--line);
+    border-radius:var(--r-sm);
+    background:var(--bg-input);
+    color-scheme:dark;
+    font-size:13px;
+    color:var(--text);
+    font-family:var(--sans);
+    transition:border-color .15s ease, box-shadow .15s ease;
+  }
+  select:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft);}
+
+  .modeToggle{
+    margin-top:17px;
+    padding-top:15px;
+    border-top:1px solid var(--line);
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+  .modeToggle label{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    cursor:pointer;
+    font-size:12.5px;
+    color:var(--text-soft);
+    padding:7px 12px;
+    border:1px solid var(--line);
+    border-radius:999px;
+    transition:border-color .15s ease, color .15s ease, background .15s ease;
+  }
+  .modeToggle label:has(input:checked){
+    border-color:var(--accent);
+    color:#fff;
+    background:linear-gradient(155deg, rgba(20,131,255,0.28), rgba(93,77,252,0.22));
+    font-weight:600;
+  }
+  .modeToggle input{accent-color:var(--accent);}
+
+  .multiColBox{
+    margin-top:14px;
+    border:1px solid var(--line);
+    border-radius:var(--r-sm);
+    background:var(--bg-input);
+    padding:6px;
+    max-height:150px;
+    overflow-y:auto;
+  }
+  .multiColBox label{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:7px 9px;
+    border-radius:6px;
+    font-size:12.5px;
+    color:var(--text-soft);
+    cursor:pointer;
+  }
+  .multiColBox label:hover{background:var(--accent-soft); color:#fff;}
+  .multiColBox input{accent-color:var(--accent);}
+  .multiColBox .empty-note{padding:8px; font-size:12px; color:var(--text-faint);}
+
+  .mapLabel{
+    padding:9px 10px;
+    font-family:var(--mono);
+    font-size:12.5px;
+    color:var(--text-soft);
+    border:1px solid var(--line);
+    border-radius:var(--r-sm);
+    background:var(--bg-input);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .mapArrow{
+    align-self:center;
+    color:var(--accent);
+    font-size:15px;
+    font-weight:700;
+    padding-bottom:9px;
+  }
+
+  /* actions */
+  .actions{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    margin:26px 0 4px;
+    flex-wrap:wrap;
+  }
+  button.run{
+    background:linear-gradient(135deg, var(--accent), var(--accent-2));
+    color:#fff;
+    border:none;
+    padding:13px 30px;
+    border-radius:999px;
+    font-size:14px;
+    font-weight:700;
+    font-family:var(--display);
+    cursor:pointer;
+    box-shadow:0 14px 30px -12px var(--accent-glow);
+    transition:transform .1s ease, box-shadow .15s ease, opacity .15s ease;
+  }
+  button.run:hover{transform:translateY(-1px); box-shadow:0 18px 36px -12px var(--accent-glow);}
+  button.run:active{transform:translateY(0px);}
+  button.run:disabled{opacity:0.6; cursor:not-allowed; transform:none;}
+
+  button.ghost{
+    background:rgba(255,255,255,0.04);
+    border:1px solid var(--line-strong);
+    color:var(--text);
+    padding:9px 17px;
+    border-radius:999px;
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+    font-family:var(--sans);
+    transition:border-color .15s ease, background .15s ease;
+  }
+  button.ghost:hover{border-color:var(--accent); background:var(--accent-soft);}
+
+  .status{font-size:13px; color:var(--text-soft);}
+  .status.err{color:var(--warn); font-weight:600;}
+
+  /* results */
+  .resultwrap{
+    margin-top:24px;
+    border:1px solid var(--line);
+    border-radius:var(--r-lg);
+    background:linear-gradient(180deg, var(--bg-panel), var(--bg-panel-alt));
+    overflow:hidden;
+    box-shadow:var(--shadow-md);
+  }
+  .resulthead{
+    padding:18px 20px;
+    border-bottom:1px solid var(--line);
+    background:rgba(255,255,255,0.02);
+  }
+  .resulthead-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:14px;
+    flex-wrap:wrap;
+    margin-bottom:15px;
+  }
+  .resulthead h3{font-family:var(--display); font-size:15px; margin:0; font-weight:600; color:#fff;}
+
+  .exportrow{display:flex; align-items:center; gap:8px;}
+  .exportrow select{width:auto; padding:9px 10px;}
+
+  .matchbar-wrap{display:flex; align-items:center; gap:14px;}
+  .matchbar-track{
+    flex:1;
+    height:10px;
+    border-radius:999px;
+    background:rgba(255,255,255,0.06);
+    overflow:hidden;
+    min-width:140px;
+    position:relative;
+  }
+  .matchbar-fill{
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg, var(--accent), var(--accent-2));
+    border-radius:999px;
+    box-shadow:0 0 14px var(--accent-glow);
+    transition:width .18s linear;
+  }
+  .matchbar-label{
+    font-family:var(--mono);
+    font-size:12.5px;
+    color:var(--text-soft);
+    white-space:nowrap;
+  }
+  .matchbar-label b{color:#fff; font-weight:700;}
+
+  .tablescroll{max-height:440px; overflow:auto;}
+  table{width:100%; border-collapse:collapse; font-size:13px;}
+  thead th{
+    position:sticky; top:0;
+    background:#0d1526;
+    text-align:left;
+    padding:10px 14px;
+    border-bottom:1px solid var(--line);
+    font-weight:600;
+    font-size:12px;
+    color:var(--text-soft);
+    white-space:nowrap;
+  }
+  tbody td{
+    padding:9px 14px;
+    border-bottom:1px solid var(--line);
+    font-family:var(--mono);
+    font-size:12.5px;
+    color:var(--text);
+    white-space:nowrap;
+  }
+  tbody tr:hover td{background:rgba(255,255,255,0.03);}
+  tbody tr:last-child td{border-bottom:none;}
+  .cell-miss{
+    color:var(--warn);
+    background:var(--warn-soft);
+  }
+  .badge-ok{
+    display:inline-block;
+    font-size:11px;
+    font-family:var(--mono);
+    padding:2px 9px;
+    border-radius:999px;
+    background:var(--accent-soft);
+    color:#7fb8ff;
+    font-weight:600;
+  }
+  .badge-miss{
+    display:inline-block;
+    font-size:11px;
+    font-family:var(--mono);
+    padding:2px 9px;
+    border-radius:999px;
+    background:var(--warn-soft);
+    color:var(--warn);
+    font-weight:600;
+  }
+
+  .empty{
+    padding:56px 20px;
+    text-align:center;
+    color:var(--text-faint);
+    font-size:13.5px;
+    border:1px dashed var(--line-strong);
+    border-radius:var(--r-lg);
+    background:rgba(255,255,255,0.02);
+  }
+
+  /* welcome page */
+  .welcome{
+    min-height:calc(100vh - 80px);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+  }
+  .welcome-card{
+    width:min(560px, 100%);
+    padding:42px 30px 38px;
+    border:1px solid var(--line);
+    border-radius:var(--r-lg);
+    background:linear-gradient(180deg, rgba(17,26,46,0.94), rgba(12,20,36,0.94));
+    box-shadow:var(--shadow-md), 0 0 80px rgba(20,131,255,0.12);
+  }
+  .welcome-logo{
+    width:92px;
+    height:92px;
+    margin:0 auto 20px;
+    padding:8px;
+    border-radius:25px;
+    background:linear-gradient(155deg, var(--accent), var(--accent-2));
+    box-shadow:var(--shadow-glow);
+  }
+  .welcome-logo img{width:100%; height:100%; object-fit:contain; border-radius:18px; display:block;}
+  .welcome h1{
+    margin:0 0 12px;
+    font-family:var(--display);
+    font-size:32px;
+    color:#fff;
+  }
+  .welcome p{
+    margin:0 auto 28px;
+    max-width:440px;
+    color:var(--text-soft);
+    font-size:14px;
+    line-height:1.8;
+  }
+  .welcome-enter{
+    background:linear-gradient(135deg, var(--accent), var(--accent-2));
+    color:#fff;
+    border:0;
+    padding:14px 34px;
+    border-radius:999px;
+    font:700 15px var(--display);
+    cursor:pointer;
+    box-shadow:0 14px 30px -12px var(--accent-glow);
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .welcome-enter:hover{transform:translateY(-2px); box-shadow:0 18px 36px -12px var(--accent-glow);}
+  .welcome[hidden], .wrap[hidden]{display:none;}
+  @media (max-width:520px){
+    body{padding:24px 14px 60px;}
+    .welcome-card{padding:34px 20px 32px;}
+    .welcome h1{font-size:27px;}
+  }
+</style>
+</head>
+<body>
+<div class="welcome" id="welcomePage">
+  <div class="welcome-card">
+    <div class="welcome-logo">
+      <img src="https://uploads.onecompiler.io/453apkeap/1789456458422/ChatGPT%20Image%20Sep%2015,%202026,%2002_07_02%20PM.png" alt="โลโก้ตัวจับคู่ข้อมูล">
+    </div>
+    <h1>ตัวจับคู่ข้อมูล</h1>
+    <p>จับคู่ข้อมูลจากตาราง CSV หรือ Excel ได้ง่ายและรวดเร็ว พร้อมนำผลลัพธ์ไปใช้งานต่อได้ทันที</p>
+    <button class="welcome-enter" id="enterBtn">ไปลุยกันเลย</button>
+  </div>
+</div>
+
+<div class="wrap" id="appPage" hidden>
+
+  <header>
+    <div class="titlerow">
+      <div class="brandmark">
+        <img src="https://uploads.onecompiler.io/453apkeap/1789456458422/ChatGPT%20Image%20Sep%2015,%202026,%2002_07_02%20PM.png" alt="โลโก้ตัวจับคู่ข้อมูล">
+      </div>
+      <h1>ตัวจับคู่ข้อมูล</h1>
+    </div>
+    <p>วางตาราง หรืออัปโหลดไฟล์ CSV / Excel สองชุด เลือกคอลัมน์ที่ใช้จับคู่ กำหนดว่าจะดึงคอลัมน์ไหนไปวางตรงไหน แล้วให้ระบบจับคู่ข้อมูลแทนสูตร INDEX + MATCH</p>
+  </header>
+
+  <div class="grid">
+    <div class="panel">
+      <div class="stephead"><span class="stepnum">1</span><h2>ตารางค้นหา (แหล่งข้อมูล)</h2></div>
+      <p class="hint">ตารางที่มีคำตอบอยู่ในนั้น — แถวแรกเป็นชื่อหัวคอลัมน์ คั่นด้วย Tab หรือ Comma</p>
+      <textarea id="sourceInput" placeholder="ชื่อสินค้า	ราคา	สต๊อก
+แอปเปิล	45	120
+กล้วย	20	300
+ส้ม	35	80"></textarea>
+      <div class="filerow">
+        <label class="filebtn">
+          <input type="file" id="sourceFile" accept=".csv,.tsv,.txt,.xlsx,.xls">
+          เลือกไฟล์ CSV / Excel
+        </label>
+        <span class="filename" id="sourceFileName"></span>
+      </div>
+      <div class="sheetrow" id="sourceSheetRow">
+        <label>เลือกชีต (Sheet)</label>
+        <select id="sourceSheetSel"></select>
+      </div>
+      <div class="colrow">
+        <div class="field">
+          <label>คอลัมน์คีย์ (ใช้จับคู่)</label>
+          <select id="sourceKeyCol"><option>—</option></select>
+        </div>
+      </div>
+
+      <div class="modeToggle">
+        <label><input type="radio" name="valMode" value="single" checked> คอลัมน์เดียว</label>
+        <label><input type="radio" name="valMode" value="range"> ช่วงคอลัมน์ (จาก–ถึง)</label>
+        <label><input type="radio" name="valMode" value="multi"> เลือกหลายคอลัมน์ (คละ)</label>
+      </div>
+
+      <div class="colrow" id="singleColRow">
+        <div class="field">
+          <label>คอลัมน์ที่ต้องการดึงค่า</label>
+          <select id="sourceValCol"><option>—</option></select>
+        </div>
+      </div>
+      <div class="colrow" id="rangeColRow" style="display:none;">
+        <div class="field">
+          <label>จากคอลัมน์</label>
+          <select id="sourceValFrom"><option>—</option></select>
+        </div>
+        <div class="field">
+          <label>ถึงคอลัมน์</label>
+          <select id="sourceValTo"><option>—</option></select>
+        </div>
+      </div>
+      <div id="multiColRow" style="display:none;">
+        <label style="display:block; font-size:11.5px; color:var(--text-faint); margin:14px 0 5px; font-family:var(--mono);">เลือกคอลัมน์ที่ต้องการ (เลือกได้หลายรายการ ไม่ต้องเรียงติดกัน)</label>
+        <div class="multiColBox" id="multiColList"><div class="empty-note">ยังไม่มีข้อมูลคอลัมน์</div></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="stephead"><span class="stepnum">2</span><h2>รายการที่ต้องการค้นหา</h2></div>
+      <p class="hint">รายการค่าที่ต้องการนำไปหาในตารางค้นหา แถวแรกเป็นชื่อหัวคอลัมน์</p>
+      <textarea id="lookupInput" placeholder="ชื่อสินค้า
+ส้ม
+แอปเปิล
+มะม่วง"></textarea>
+      <div class="filerow">
+        <label class="filebtn">
+          <input type="file" id="lookupFile" accept=".csv,.tsv,.txt,.xlsx,.xls">
+          เลือกไฟล์ CSV / Excel
+        </label>
+        <span class="filename" id="lookupFileName"></span>
+      </div>
+      <div class="sheetrow" id="lookupSheetRow">
+        <label>เลือกชีต (Sheet)</label>
+        <select id="lookupSheetSel"></select>
+      </div>
+      <div class="colrow">
+        <div class="field">
+          <label>คอลัมน์คีย์ (ใช้จับคู่)</label>
+          <select id="lookupKeyCol"><option>—</option></select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="mappingPanel" style="margin-bottom:18px; display:none;">
+    <div class="stephead"><span class="stepnum">3</span><h2>ตำแหน่งผลลัพธ์ในรายการค้นหา</h2></div>
+    <p class="hint">เลือกว่าค่าที่ดึงมาจากตารางค้นหาแต่ละคอลัมน์ จะไปวางลงคอลัมน์ไหนในรายการค้นหา — เลือกคอลัมน์เดิมเพื่อเติม/เขียนทับ หรือสร้างคอลัมน์ใหม่ก็ได้</p>
+    <div id="mappingRows"></div>
+  </div>
+
+  <div class="actions">
+    <button class="run" id="runBtn">จับคู่ข้อมูล</button>
+    <span class="status" id="status"></span>
+  </div>
+
+  <div class="resultwrap" id="resultWrap" style="display:none;">
+    <div class="resulthead">
+      <div class="resulthead-top">
+        <h3>ผลลัพธ์</h3>
+        <div class="exportrow">
+          <select id="exportFormat">
+            <option value="csv">.csv</option>
+            <option value="xlsx">.xlsx (Excel)</option>
+          </select>
+          <button class="ghost" id="exportBtn">ดาวน์โหลด</button>
+        </div>
+      </div>
+      <div class="matchbar-wrap">
+        <div class="matchbar-track"><div class="matchbar-fill" id="matchBarFill"></div></div>
+        <div class="matchbar-label" id="matchBarLabel"></div>
+      </div>
+    </div>
+    <div class="tablescroll">
+      <table>
+        <thead><tr id="resultHeadRow"></tr></thead>
+        <tbody id="resultBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="empty" id="emptyState">ยังไม่มีผลลัพธ์ — กรอกข้อมูลสองฝั่งด้านบนแล้วกด "จับคู่ข้อมูล"</div>
+
+</div>
+
+<script>
+// ---- state ----
+const src = { headers: [], rows: [], workbook: null, sheetNames: [], sheetName: null };
+const lkp = { headers: [], rows: [], workbook: null, sheetNames: [], sheetName: null };
+let lastResults = null;
+
+// เปิดหน้าหลักเมื่อผู้ใช้กดปุ่มเริ่มต้น
+ document.getElementById("enterBtn").addEventListener("click", () => {
+  document.getElementById("welcomePage").hidden = true;
+  document.getElementById("appPage").hidden = false;
+});
+
+function detectDelimiter(text){
+  const firstLine = text.split(/\r?\n/)[0] || "";
+  if (firstLine.includes("\t")) return "\t";
+  return ",";
+}
+
+function aoaToHeadersRows(aoa){
+  if (!aoa.length) return { headers: [], rows: [] };
+  const headers = aoa[0].map(h => (h === undefined || h === null ? "" : String(h).trim()));
+  const rows = aoa.slice(1)
+    .filter(r => r.some(c => c !== undefined && c !== null && String(c).trim() !== ""))
+    .map(r => {
+      const obj = {};
+      headers.forEach((h, i) => {
+        const v = r[i];
+        obj[h] = (v === undefined || v === null) ? "" : (typeof v === "string" ? v.trim() : v);
+      });
+      return obj;
+    });
+  return { headers, rows };
+}
+
+function parseText(text){
+  const delim = detectDelimiter(text);
+  const parsed = Papa.parse(text.trim(), { delimiter: delim, skipEmptyLines: true });
+  return aoaToHeadersRows(parsed.data);
+}
+
+function fillSelect(sel, headers, placeholder){
+  sel.innerHTML = "";
+  const ph = document.createElement("option");
+  ph.textContent = placeholder;
+  ph.value = "";
+  sel.appendChild(ph);
+  headers.forEach(h => {
+    const opt = document.createElement("option");
+    opt.value = h; opt.textContent = h;
+    sel.appendChild(opt);
+  });
+}
+
+function refreshSource(){
+  if (src.workbook) return;
+  const text = document.getElementById("sourceInput").value;
+  const { headers, rows } = parseText(text);
+  src.headers = headers; src.rows = rows;
+  applySourceHeaders();
+}
+
+function refreshLookup(){
+  if (lkp.workbook) return;
+  const text = document.getElementById("lookupInput").value;
+  const { headers, rows } = parseText(text);
+  lkp.headers = headers; lkp.rows = rows;
+  applyLookupHeaders();
+}
+
+// remembers checked state of the multi-column list across rebuilds
+const multiColChoices = new Set();
+
+function renderMultiColList(){
+  const box = document.getElementById("multiColList");
+  box.innerHTML = "";
+  if (!src.headers.length){
+    box.innerHTML = '<div class="empty-note">ยังไม่มีข้อมูลคอลัมน์</div>';
+    return;
+  }
+  src.headers.forEach(h => {
+    const label = document.createElement("label");
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.value = h;
+    cb.checked = multiColChoices.has(h);
+    cb.addEventListener("change", () => {
+      if (cb.checked) multiColChoices.add(h); else multiColChoices.delete(h);
+      rebuildMapping();
+    });
+    const span = document.createElement("span");
+    span.textContent = h;
+    label.appendChild(cb);
+    label.appendChild(span);
+    box.appendChild(label);
+  });
+}
+
+function applySourceHeaders(){
+  fillSelect(document.getElementById("sourceKeyCol"), src.headers, "เลือกคอลัมน์คีย์");
+  fillSelect(document.getElementById("sourceValCol"), src.headers, "เลือกคอลัมน์ผลลัพธ์");
+  fillSelect(document.getElementById("sourceValFrom"), src.headers, "เลือกคอลัมน์เริ่มต้น");
+  fillSelect(document.getElementById("sourceValTo"), src.headers, "เลือกคอลัมน์สิ้นสุด");
+  renderMultiColList();
+  rebuildMapping();
+}
+
+function applyLookupHeaders(){
+  fillSelect(document.getElementById("lookupKeyCol"), lkp.headers, "เลือกคอลัมน์คีย์");
+  rebuildMapping();
+}
+
+function getValueCols(){
+  const mode = document.querySelector('input[name="valMode"]:checked').value;
+  if (mode === "single"){
+    const v = document.getElementById("sourceValCol").value;
+    return v ? [v] : [];
+  }
+  if (mode === "multi"){
+    return src.headers.filter(h => multiColChoices.has(h));
+  }
+  const from = document.getElementById("sourceValFrom").value;
+  const to = document.getElementById("sourceValTo").value;
+  if (from && to){
+    const fi = src.headers.indexOf(from);
+    const ti = src.headers.indexOf(to);
+    const lo = Math.min(fi, ti), hi = Math.max(fi, ti);
+    return src.headers.slice(lo, hi + 1);
+  }
+  return [];
+}
+
+document.getElementById("sourceInput").addEventListener("input", () => {
+  src.workbook = null;
+  document.getElementById("sourceSheetRow").classList.remove("show");
+  document.getElementById("sourceFileName").textContent = "";
+  refreshSource();
+});
+document.getElementById("lookupInput").addEventListener("input", () => {
+  lkp.workbook = null;
+  document.getElementById("lookupSheetRow").classList.remove("show");
+  document.getElementById("lookupFileName").textContent = "";
+  refreshLookup();
+});
+
+function isExcelFile(name){
+  return /\.(xlsx|xls)$/i.test(name);
+}
+
+function loadFile(file, state, textareaId, sheetRowId, sheetSelId, applyHeadersFn, fileNameId){
+  document.getElementById(fileNameId).textContent = file.name;
+  const isExcel = isExcelFile(file.name);
+  if (isExcel){
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const data = new Uint8Array(ev.target.result);
+      const wb = XLSX.read(data, { type: "array" });
+      state.workbook = wb;
+      state.sheetNames = wb.SheetNames;
+      state.sheetName = wb.SheetNames[0];
+
+      const sheetSel = document.getElementById(sheetSelId);
+      sheetSel.innerHTML = "";
+      wb.SheetNames.forEach(name => {
+        const opt = document.createElement("option");
+        opt.value = name; opt.textContent = name;
+        sheetSel.appendChild(opt);
+      });
+      const sheetRow = document.getElementById(sheetRowId);
+      if (wb.SheetNames.length > 1){
+        sheetRow.classList.add("show");
+      } else {
+        sheetRow.classList.remove("show");
+      }
+
+      loadSheet(state, state.sheetName, textareaId, applyHeadersFn);
+    };
+    reader.readAsArrayBuffer(file);
+  } else {
+    state.workbook = null;
+    document.getElementById(sheetRowId).classList.remove("show");
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      document.getElementById(textareaId).value = ev.target.result;
+      const { headers, rows } = parseText(ev.target.result);
+      state.headers = headers; state.rows = rows;
+      applyHeadersFn();
+    };
+    reader.readAsText(file);
+  }
+}
+
+function loadSheet(state, sheetName, textareaId, applyHeadersFn){
+  const ws = state.workbook.Sheets[sheetName];
+  const aoa = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "", raw: true });
+  const { headers, rows } = aoaToHeadersRows(aoa);
+  state.headers = headers; state.rows = rows; state.sheetName = sheetName;
+  const csvPreview = XLSX.utils.sheet_to_csv(ws);
+  document.getElementById(textareaId).value = csvPreview;
+  applyHeadersFn();
+}
+
+document.getElementById("sourceFile").addEventListener("change", (e) => {
+  const f = e.target.files[0];
+  if (!f) return;
+  loadFile(f, src, "sourceInput", "sourceSheetRow", "sourceSheetSel", applySourceHeaders, "sourceFileName");
+});
+
+document.getElementById("lookupFile").addEventListener("change", (e) => {
+  const f = e.target.files[0];
+  if (!f) return;
+  loadFile(f, lkp, "lookupInput", "lookupSheetRow", "lookupSheetSel", applyLookupHeaders, "lookupFileName");
+});
+
+document.getElementById("sourceSheetSel").addEventListener("change", (e) => {
+  loadSheet(src, e.target.value, "sourceInput", applySourceHeaders);
+});
+document.getElementById("lookupSheetSel").addEventListener("change", (e) => {
+  loadSheet(lkp, e.target.value, "lookupInput", applyLookupHeaders);
+});
+
+// value-column mode toggle
+document.querySelectorAll('input[name="valMode"]').forEach(r => {
+  r.addEventListener("change", (e) => {
+    const mode = e.target.value;
+    document.getElementById("singleColRow").style.display = mode === "single" ? "flex" : "none";
+    document.getElementById("rangeColRow").style.display = mode === "range" ? "flex" : "none";
+    document.getElementById("multiColRow").style.display = mode === "multi" ? "block" : "none";
+    rebuildMapping();
+  });
+});
+["sourceValCol", "sourceValFrom", "sourceValTo"].forEach(id => {
+  document.getElementById(id).addEventListener("change", rebuildMapping);
+});
+
+// remembers the user's chosen target per source column across rebuilds, where possible
+const mappingChoices = {};
+
+function rebuildMapping(){
+  const valueCols = getValueCols();
+  const panel = document.getElementById("mappingPanel");
+  const container = document.getElementById("mappingRows");
+
+  container.querySelectorAll(".mapTarget").forEach(sel => {
+    mappingChoices[sel.dataset.source] = sel.value;
+  });
+
+  container.innerHTML = "";
+  if (!valueCols.length || !lkp.headers.length){
+    panel.style.display = "none";
+    return;
+  }
+  panel.style.display = "block";
+
+  valueCols.forEach(col => {
+    const row = document.createElement("div");
+    row.className = "colrow";
+    row.innerHTML = `
+      <div class="field">
+        <label>คอลัมน์จากตารางค้นหา</label>
+        <div class="mapLabel">${escapeHtml(col)}</div>
+      </div>
+      <div class="mapArrow">→</div>
+      <div class="field">
+        <label>วางลงคอลัมน์ปลายทาง (ในรายการค้นหา)</label>
+        <select class="mapTarget" data-source="${escapeHtml(col)}"></select>
+      </div>
+    `;
+    container.appendChild(row);
+
+    const sel = row.querySelector(".mapTarget");
+    const newOpt = document.createElement("option");
+    newOpt.value = "__new__";
+    newOpt.textContent = `+ สร้างคอลัมน์ใหม่ ("${col}")`;
+    sel.appendChild(newOpt);
+    lkp.headers.forEach(h => {
+      const opt = document.createElement("option");
+      opt.value = h; opt.textContent = h;
+      sel.appendChild(opt);
+    });
+
+    const prev = mappingChoices[col];
+    if (prev && (prev === "__new__" || lkp.headers.includes(prev))){
+      sel.value = prev;
+    } else if (lkp.headers.includes(col)){
+      sel.value = col;
+    } else {
+      sel.value = "__new__";
+    }
+  });
+}
+
+function setStatus(msg, isErr){
+  const el = document.getElementById("status");
+  el.textContent = msg || "";
+  el.className = "status" + (isErr ? " err" : "");
+}
+
+const runBtn = document.getElementById("runBtn");
+const fillEl = document.getElementById("matchBarFill");
+const labelEl = document.getElementById("matchBarLabel");
+
+function sleepFrame(){
+  return new Promise(resolve => requestAnimationFrame(resolve));
+}
+
+async function runMatch(){
+  if (!src.workbook) refreshSource();
+  if (!lkp.workbook) refreshLookup();
+
+  const sKey = document.getElementById("sourceKeyCol").value;
+  const lKey = document.getElementById("lookupKeyCol").value;
+  const valueCols = getValueCols();
+
+  if (!src.rows.length || !lkp.rows.length){
+    setStatus("กรุณากรอกข้อมูลทั้งสองฝั่งก่อน", true);
+    return;
+  }
+  if (!sKey || !lKey || !valueCols.length){
+    setStatus("กรุณาเลือกคอลัมน์คีย์และคอลัมน์ผลลัพธ์ให้ครบ", true);
+    return;
+  }
+
+  const targetOf = {};
+  document.querySelectorAll(".mapTarget").forEach(sel => {
+    targetOf[sel.dataset.source] = sel.value || "__new__";
+  });
+
+  const outputHeaders = [...lkp.headers];
+  const resolvedTarget = {};
+  valueCols.forEach(col => {
+    const target = targetOf[col] || "__new__";
+    if (target !== "__new__" && outputHeaders.includes(target)){
+      resolvedTarget[col] = target;
+    } else {
+      let name = target !== "__new__" ? target : col;
+      let n = 1;
+      while (outputHeaders.includes(name)){
+        n++;
+        name = `${target !== "__new__" ? target : col} (${n})`;
+      }
+      outputHeaders.push(name);
+      resolvedTarget[col] = name;
+    }
+  });
+
+  const map = new Map();
+  src.rows.forEach(r => {
+    const k = String(r[sKey] ?? "").toLowerCase().trim();
+    if (!map.has(k)) map.set(k, r);
+  });
+
+  // --- animated, genuinely-progressive matching: process in chunks and
+  // paint the real running match rate after each chunk ---
+  setStatus("");
+  runBtn.disabled = true;
+  runBtn.textContent = "กำลังจับคู่…";
+  document.getElementById("emptyState").style.display = "none";
+  document.getElementById("resultWrap").style.display = "block";
+  document.getElementById("resultHeadRow").innerHTML = "";
+  document.getElementById("resultBody").innerHTML = "";
+  fillEl.style.width = "0%";
+  labelEl.innerHTML = `กำลังเริ่มจับคู่ข้อมูล…`;
+  await sleepFrame();
+
+  const total = lkp.rows.length;
+  const steps = Math.min(40, total) || 1;
+  const chunkSize = Math.max(1, Math.ceil(total / steps));
+
+  let matched = 0, missed = 0;
+  const results = [];
+
+  for (let i = 0; i < total; i += chunkSize){
+    const chunk = lkp.rows.slice(i, i + chunkSize);
+    chunk.forEach(r => {
+      const rawKey = r[lKey];
+      const k = String(rawKey ?? "").toLowerCase().trim();
+      const found = map.has(k);
+      if (found) matched++; else missed++;
+      const outRow = { ...r };
+      valueCols.forEach(col => {
+        const header = resolvedTarget[col];
+        outRow[header] = found ? map.get(k)[col] : "#N/A";
+      });
+      results.push({ found, row: outRow });
+    });
+
+    const done = Math.min(i + chunkSize, total);
+    const pct = total ? Math.round((done / total) * 100) : 0;
+    fillEl.style.width = pct + "%";
+    labelEl.innerHTML = `<b>${pct}%</b> กำลังจับคู่… (${done}/${total})`;
+    await sleepFrame();
+  }
+
+  lastResults = { results, outputHeaders };
+  renderResultsTable(results, outputHeaders);
+
+  const finalPct = total ? Math.round((matched / total) * 100) : 0;
+  fillEl.style.width = finalPct + "%";
+  labelEl.innerHTML = `<b>${finalPct}%</b> จับคู่สำเร็จ &nbsp;(${matched} พบ, ${missed} ไม่พบ, ${total} รายการ)`;
+
+  runBtn.disabled = false;
+  runBtn.textContent = "จับคู่ข้อมูล";
+}
+
+runBtn.addEventListener("click", runMatch);
+
+function renderResultsTable(results, outputHeaders){
+  const headRow = document.getElementById("resultHeadRow");
+  headRow.innerHTML = outputHeaders.map(h => `<th>${escapeHtml(h)}</th>`).join("") + `<th>สถานะ</th>`;
+
+  const body = document.getElementById("resultBody");
+  body.innerHTML = "";
+  results.forEach(r => {
+    const tr = document.createElement("tr");
+    const cells = outputHeaders.map(h => {
+      const v = r.row[h];
+      const isMiss = v === "#N/A";
+      return `<td class="${isMiss ? "cell-miss" : ""}">${escapeHtml(v)}</td>`;
+    }).join("");
+    const badge = r.found ? `<span class="badge-ok">พบ</span>` : `<span class="badge-miss">ไม่พบ</span>`;
+    tr.innerHTML = `${cells}<td>${badge}</td>`;
+    body.appendChild(tr);
+  });
+}
+
+function escapeHtml(s){
+  if (s === null || s === undefined) return "";
+  return String(s).replace(/[&<>"']/g, c => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[c]));
+}
+
+document.getElementById("exportBtn").addEventListener("click", () => {
+  if (!lastResults) return;
+  const { results, outputHeaders } = lastResults;
+  const format = document.getElementById("exportFormat").value;
+
+  const rows = [[...outputHeaders, "สถานะ"]];
+  results.forEach(r => {
+    const vals = outputHeaders.map(h => r.row[h] ?? "");
+    rows.push([...vals, r.found ? "พบ" : "ไม่พบ"]);
+  });
+
+  if (format === "xlsx"){
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "ผลลัพธ์");
+    XLSX.writeFile(wb, "matched_results.xlsx");
+  } else {
+    const csv = rows.map(row => row.map(c => {
+      const s = String(c ?? "");
+      return /[",\n]/.test(s) ? '"' + s.replace(/"/g,'""') + '"' : s;
+    }).join(",")).join("\n");
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = "matched_results.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+});
+
+// init with placeholder data
+refreshSource();
+refreshLookup();
+</script>
+</body>
+</html>
