@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FCR Support & Admin Portal</title>
+    <!-- Tailwind CSS CDN for Modern & Clean styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for clean, modern Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Inter', 'Sarabun', sans-serif;
+        }
+        /* Custom scrollbar for tables and cards */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- Header Section -->
+    <header class="bg-[#005088] text-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-white/10 p-2.5 rounded-lg border border-white/20">
+                    <i class="fa-solid fa-laptop-code text-2xl text-emerald-400"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-wide">IT Support Service SDM Desktop</h1>
+                    <p class="text-xs text-slate-300">Reference Database: PAM-ITH-FCR_Service SDM_Desktop-R41.xlsx</p>
+                </div>
+            </div>
+            
+            <!-- Quick View Toggle Buttons (Simulated Role Switch) -->
+            <div class="flex bg-slate-900/30 p-1 rounded-lg border border-white/10">
+                <button id="btn-user-mode" onclick="switchMode('user')" class="px-4 py-2 rounded-md text-sm font-semibold transition-all duration-200 flex items-center gap-2 bg-white text-[#005088] shadow">
+                    <i class="fa-solid fa-magnifying-glass"></i> IT Support View
+                </button>
+                <button id="btn-admin-mode" onclick="switchMode('admin')" class="px-4 py-2 rounded-md text-sm font-semibold transition-all duration-200 flex items-center gap-2 text-slate-300 hover:text-white">
+                    <i class="fa-solid fa-lock"></i> Admin Control
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 py-8">
+        
+        <!-- ======================= 1. USER VIEW (SEARCH & VIEW FCR) ======================= -->
+        <section id="user-section" class="space-y-6">
+            <!-- Summary Stats Card -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
+                    <div class="p-3 bg-blue-50 text-blue-600 rounded-lg"><i class="fa-solid fa-database text-2xl"></i></div>
+                    <div>
+                        <p class="text-sm text-slate-500 font-medium">FCR ในระบบทั้งหมด</p>
+                        <h3 class="text-2xl font-bold" id="stat-total">0</h3>
+                    </div>
+                </div>
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
+                    <div class="p-3 bg-emerald-50 text-emerald-600 rounded-lg"><i class="fa-solid fa-circle-check text-2xl"></i></div>
+                    <div>
+                        <p class="text-sm text-slate-500 font-medium">One Click System</p>
+                        <h3 class="text-2xl font-bold" id="stat-oneclick">0</h3>
+                    </div>
+                </div>
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
+                    <div class="p-3 bg-amber-50 text-amber-600 rounded-lg"><i class="fa-solid fa-wand-magic-sparkles text-2xl"></i></div>
+                    <div>
+                        <p class="text-sm text-slate-500 font-medium">หมวด Improvement</p>
+                        <h3 class="text-2xl font-bold" id="stat-improvement">0</h3>
+                    </div>
+                </div>
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
+                    <div class="p-3 bg-rose-50 text-rose-600 rounded-lg"><i class="fa-solid fa-triangle-exclamation text-2xl"></i></div>
+                    <div>
+                        <p class="text-sm text-slate-500 font-medium">หมวด Incident / Problem</p>
+                        <h3 class="text-2xl font-bold" id="stat-incidents">0</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters & Search Toolbar -->
+            <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
+                <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-filter text-blue-600"></i> ค้นหาและกรองข้อมูล FCR
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="md:col-span-2 relative">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-slate-400"></i>
+                        <input type="text" id="user-search" oninput="filterFCR()" placeholder="ค้นหาด้วย FCR ID, หัวข้อปัญหา, หรือวิธีแก้ไข..." class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[#005088] focus:border-[#005088] outline-none text-sm transition-all">
+                    </div>
+                    <div>
+                        <select id="user-filter-cat" onchange="filterFCR()" class="w-full px-3 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[#005088] focus:border-[#005088] outline-none text-sm bg-white">
+                            <option value="">-- ทุก Category --</option>
+                            <option value="IMPROVEMENT">IMPROVEMENT</option>
+                            <option value="INCIDENT">INCIDENT</option>
+                            <option value="REQUEST">REQUEST</option>
+                        </select>
+                    </div>
+                    <div>
+                        <select id="user-filter-sys" onchange="filterFCR()" class="w-full px-3 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[#005088] focus:border-[#005088] outline-none text-sm bg-white">
+                            <option value="">-- ทุกระบบ (System) --</option>
+                            <option value="One Click">One Click</option>
+                            <option value="Windows">Windows</option>
+                            <option value="Hardware / Device">Hardware / Device</option>
+                            <option value="Network">Network</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FCR Directory Table -->
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 text-xs uppercase font-bold tracking-wider">
+                                <th class="p-4 w-32">FCR ID</th>
+                                <th class="p-4 w-40">Category</th>
+                                <th class="p-4 w-40">System</th>
+                                <th class="p-4">หัวข้อปัญหา (Problem Type)</th>
+                                <th class="p-4 w-36 text-center">ระดับความสำคัญ</th>
+                                <th class="p-4 w-28 text-center">ดูวิธีแก้</th>
+                            </tr>
+                        </thead>
+                        <tbody id="fcr-user-tbody" class="divide-y divide-slate-100 text-sm">
+                            <!-- Rows dynamically populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Empty state -->
+                <div id="user-empty-state" class="hidden p-12 text-center text-slate-400 space-y-2">
+                    <i class="fa-regular fa-folder-open text-4xl"></i>
+                    <p>ไม่พบข้อมูล FCR ที่ตรงกับเงื่อนไขการค้นหาของคุณ</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ======================= 2. ADMIN CONTROL VIEW ======================= -->
+        <section id="admin-section" class="hidden space-y-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-user-gear text-[#005088]"></i> หน้าต่างควบคุมของแอดมิน (Admin Portal)
+                    </h2>
+                    <p class="text-sm text-slate-500">จัดการ เพิ่ม ลบ หรือแก้ไขข้อมูล FCR ต้นแบบในระบบซัพพอร์ต</p>
+                </div>
+                <button onclick="openAddModal()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-semibold transition-all shadow-sm hover:shadow flex items-center gap-2">
+                    <i class="fa-solid fa-plus"></i> เพิ่มข้อมูล FCR ใหม่
+                </button>
+            </div>
+
+            <!-- Admin FCR Table -->
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 text-xs uppercase font-bold tracking-wider">
+                                <th class="p-4 w-32">FCR ID</th>
+                                <th class="p-4">หัวข้อปัญหา (Problem Type)</th>
+                                <th class="p-4 w-36">Category</th>
+                                <th class="p-4 w-36">System</th>
+                                <th class="p-4 w-32 text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="fcr-admin-tbody" class="divide-y divide-slate-100 text-sm">
+                            <!-- Rows populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Empty state admin -->
+                <div id="admin-empty-state" class="hidden p-12 text-center text-slate-400 space-y-2">
+                    <i class="fa-regular fa-folder-open text-4xl"></i>
+                    <p>ยังไม่มีข้อมูล FCR ในฐานข้อมูล</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ======================= 3. ADD/EDIT FCR DIALOG MODAL (POPUP) ======================= -->
+    <div id="fcr-modal" class="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center hidden p-4 backdrop-blur-sm transition-opacity duration-300">
+        <div class="bg-white w-full max-w-2xl rounded-2xl shadow-xl border border-slate-200 overflow-hidden transform scale-95 transition-transform duration-300 flex flex-col max-h-[90vh]">
+            <!-- Header Modal -->
+            <div class="bg-slate-50 border-b border-slate-100 px-6 py-4 flex justify-between items-center">
+                <h3 id="modal-title" class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-file-circle-plus text-emerald-600"></i> เพิ่มข้อมูล FCR ใหม่
+                </h3>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 transition-colors">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            
+            <!-- Body Form Scrollable -->
+            <form id="fcr-form" onsubmit="saveFCR(event)" class="overflow-y-auto p-6 space-y-4">
+                <input type="hidden" id="edit-index" value="">
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-500 mb-1">FCR ID <span class="text-red-500">*</span></label>
+                        <input type="text" id="f_id" required placeholder="เช่น FCR_ITH_SDM_Desktop_0001" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[#005088] outline-none text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-500 mb-1">ระบบที่เกี่ยวข้อง (System) <span class="text-red-500">*</span></label>
+                        <select id="f_system" required class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[#005088] outline-none text-sm bg-white">
+                            <option value="One Click">One Click</option>
+                            <option value="Windows">Windows</option>
+                            <option value="Hardware / Device">Hardware / Device</option>
+                            <option value="Network">Network</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Category <span class="text-red-500">*</span></label>
+                        <select id="f_category" required class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[#005088] outline-none text-sm bg-white">
+                            <option value="IMPROVEMENT">IMPROVEMENT</option>
+                            <option value="INCIDENT">INCIDENT</option>
+                            <option value="REQUEST">REQUEST</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Sub Category</label>
+                        <input type="text" id="f_sub_cat" placeholder="เช่น ONE CLICK, OS" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[#005088] outline-none text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Product Type</label>
+                        <input type="text" id="f_prod_type" placeholder="เช่น SC, PC" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[#005088] outline-none text-sm">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Priority (ความสำคัญ) <span class="text-red-500">*</span></label>
+                        <select id="f_priority" required class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[#005088] outline-none text-sm bg-white">
+                            <option value="Low">Low</option>
+                            <option value="Medium">Medium</option>
+                            <option value="High">High</option>
+                            <option value="Critical">Critical</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-500 mb-1">อ้างอิง รูปภาพ/คู่มือ</label>
+                        <input type="text" id="f_picture" placeholder="เช่น Picture_OneClick, N/A" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[#005088] outline-none text-sm">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-500 mb-1">หัวข้อปัญหา (Problem Type) <span class="text-red-500">*</span></label>
+                    <input type="text" id="f_problem_type" required placeholder="เช่น Master POS กรณีนำ Harddisk ลูกเก่ามาเชื่อมต่อได้" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[#005088] outline-none text-sm">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-500 mb-1">อาการที่หน้าร้านแจ้ง (User Symptom)</label>
+                    <textarea id="f_symptom" rows="2" placeholder="อธิบายปัญหาที่ได้รับแจ้งจากหน้าสาขา..." class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[#005088] outline-none text-sm"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Work Instruction (ขั้นตอนสำหรับ Helpdesk) <span class="text-red-500">*</span></label>
+                    <textarea id="f_instruction" required rows="4" placeholder="ระบุวิธีแก้ไขปัญหาสำหรับให้ช่างหรือพนักงาน Helpdesk ปฏิบัติตามทีละขั้นตอน..." class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[#005088] outline-none text-sm"></textarea>
+                </div>
+
+                <!-- Action Footer -->
+                <div class="border-t border-slate-100 pt-4 flex justify-end gap-3 bg-slate-50 -mx-6 -mb-6 p-4">
+                    <button type="button" onclick="closeModal()" class="px-4 py-2 text-sm font-semibold border border-slate-300 hover:bg-slate-100 text-slate-700 rounded-lg transition-all">ยกเลิก</button>
+                    <button type="submit" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-semibold transition-all shadow-sm hover:shadow flex items-center gap-1.5">
+                        <i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูล
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ======================= 4. VIEW FCR DETAIL MODAL (FOR HELPDEK WORKERS) ======================= -->
+    <div id="view-modal" class="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center hidden p-4 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-2xl rounded-2xl shadow-xl border border-slate-200 overflow-hidden transform scale-95 transition-transform flex flex-col max-h-[85vh]">
+            <div class="bg-[#005088] text-white px-6 py-4 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <span id="v-tag-id" class="px-2.5 py-1 bg-white/20 border border-white/20 text-xs font-mono rounded">FCR ID</span>
+                    <h3 id="v-title" class="text-lg font-bold">รายละเอียดขั้นตอนการซัพพอร์ต</h3>
+                </div>
+                <button onclick="closeViewModal()" class="text-slate-300 hover:text-white transition-colors">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            
+            <div class="p-6 space-y-6 overflow-y-auto">
+                <!-- Metadata Grid -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-150">
+                    <div>
+                        <p class="text-xxs font-bold text-slate-400 uppercase">Category</p>
+                        <p id="v-category" class="text-sm font-semibold text-slate-700">-</p>
+                    </div>
+                    <div>
+                        <p class="text-xxs font-bold text-slate-400 uppercase">Sub Category</p>
+                        <p id="v-subcat" class="text-sm font-semibold text-slate-700">-</p>
+                    </div>
+                    <div>
+                        <p class="text-xxs font-bold text-slate-400 uppercase">Product Type</p>
+                        <p id="v-prodtype" class="text-sm font-semibold text-slate-700">-</p>
+                    </div>
+                    <div>
+                        <p class="text-xxs font-bold text-slate-400 uppercase">System</p>
+                        <p id="v-system" class="text-sm font-semibold text-slate-700">-</p>
+                    </div>
+                </div>
+
+                <!-- Problem Description -->
+                <div class="space-y-2">
+                    <h4 class="text-xs font-bold text-slate-400 uppercase flex items-center gap-1.5"><i class="fa-solid fa-triangle-exclamation text-amber-500"></i> ปัญหา / อาการที่สาขาแจ้ง</h4>
+                    <p id="v-problem" class="text-sm text-slate-700 bg-amber-50/50 p-3 rounded-lg border border-amber-100 font-medium">-</p>
+                </div>
+
+                <!-- Work Instruction Step-by-Step -->
+                <div class="space-y-2">
+                    <h4 class="text-xs font-bold text-slate-400 uppercase flex items-center gap-1.5"><i class="fa-solid fa-list-check text-emerald-500"></i> ขั้นตอนดำเนินงานสำหรับ Helpdesk (Work Instruction)</h4>
+                    <div id="v-instruction" class="text-sm text-slate-800 bg-slate-50 p-4 rounded-lg border border-slate-200 whitespace-pre-wrap leading-relaxed font-mono">
+                        -
+                    </div>
+                </div>
+
+                <!-- Attachments/Reference -->
+                <div class="flex items-center justify-between text-xs bg-slate-100 p-3 rounded-lg text-slate-600">
+                    <span id="v-priority" class="font-semibold px-2.5 py-1 rounded bg-slate-200">Priority: -</span>
+                    <span id="v-picture"><i class="fa-regular fa-image"></i> อ้างอิงภาพคู่มือ: -</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-slate-800 text-slate-400 text-xs py-6 border-t border-slate-700 mt-12">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p>© 2026 IT Service SDM. ข้อมูลจำลองและอ้างอิงจากโครงสร้างไฟล์ FCR_Service SDM_Desktop</p>
+            <p class="flex items-center gap-2">
+                <span class="inline-block w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse"></span> ระบบทำงานผ่าน LocalStorage บนคอมพิวเตอร์ของคุณแบบ Offline 100%
+            </p>
+        </div>
+    </footer>
+
+    <!-- JavaScript logical script to handle actions & persistent storage -->
+    <script>
+        // Seed initial mock data from your Excel sheet schema
+        const defaultFCRs = [
+            {
+                id: "FCR_ITH_SDM_Desktop_0001",
+                category: "IMPROVEMENT",
+                sub_cat: "ONE CLICK",
+                prod_type: "SC",
+                problem_type: "Master POS กรณีนำ Harddisk ลูกเก่ามาเชื่อมต่อได้",
+                symptom: "กรณีอัพเกรดหรือบำรุงรักษาแล้วจำเป็นต้องนำ HDD เก่ามาสลับกลับไปเชื่อมต่อเพื่อดึงฐานข้อมูลเดิมหรือซิงค์ระบบ",
+                instruction: "1. ทำการเชื่อมต่อ Harddisk ลูกเก่าเข้ากับพอร์ต SATA\n2. เข้าหน้า BIOS ตั้งค่า Boot Order ให้เริ่มจาก HDD ลูกใหม่ที่เซ็ตระบบไว้แล้ว\n3. เมื่อบูทเข้า OS เสร็จสิ้น เปิดโปรแกรม One Click\n4. ตรวจสอบการมองเห็น HDD ลูกเดิม จากนั้นทำการย้าย Config หรือ Database ผ่านเครื่องมือ DB Migration ของโปรแกรม",
+                priority: "High",
+                picture: "Picture_OneClick",
+                system: "One Click"
+            },
+            {
+                id: "FCR_ITH_SDM_Desktop_0002",
+                category: "IMPROVEMENT",
+                sub_cat: "ONE CLICK",
+                prod_type: "SC",
+                problem_type: "Master POS ก่อน Ghost Image",
+                symptom: "ขั้นตอนการเตรียมเครื่อง Master ก่อนจัดทำ Master Image ของ POS สาขา",
+                instruction: "1. ทำการติดตั้ง Windows OS แบบ Clean Install\n2. ลงไดรเวอร์อุปกรณ์ทั้งหมดให้สมบูรณ์ (เครื่องปริ้นใบเสร็จ, สแกนเนอร์บาร์โค้ด)\n3. ดำเนินการล้าง Cache ระบบและรันคำสั่ง Sysprep\n4. สำคัญ: ห้ามทำการ Active License Windows หรือเชื่อมต่อบัญชีส่วนตัวใดๆ ในขั้นตอนนี้",
+                priority: "Medium",
+                picture: "Picture_OneClick",
+                system: "One Click"
+            },
+            {
+                id: "FCR_ITH_SDM_Desktop_0003",
+                category: "INCIDENT",
+                sub_cat: "OS",
+                prod_type: "PC",
+                problem_type: "เครื่องค้าง หน้าจอฟ้า (BSOD) บ่อยครั้ง",
+                symptom: "เครื่องสาขาค้างขณะกำลังเปิดโปรแกรมขายสินค้าหรือประมวลผลระบบสิ้นวัน",
+                instruction: "1. ตรวจสอบโค้ดข้อผิดพลาดที่ปรากฏหน้าจอฟ้า (เช่น DPC_WATCHDOG_VIOLATION)\n2. ให้ทำการอัปเดตหรือ Rollback ไดรเวอร์จอแสดงผล\n3. สแกนหาไฟล์ระบที่เสียหายด้วยคำสั่ง: sfc /scannow ใน command prompt (Admin)\n4. ทดสอบความร้อน CPU และหากเป็นไปได้ให้เปลี่ยนซิลิโคนและเป่าฝุ่นทำความสะอาดเครื่อง",
+                priority: "Critical",
+                picture: "N/A",
+                system: "Windows"
+            },
+            {
+                id: "FCR_ITH_SDM_Desktop_0004",
+                category: "REQUEST",
+                sub_cat: "PRINTER",
+                prod_type: "HW",
+                problem_type: "เครื่องพิมพ์ใบเสร็จแชร์เน็ตเวิร์กพิมพ์ไม่ออก",
+                symptom: "พนักงานหน้าฟรอนท์ส่งคิวสั่งพิมพ์แล้วเครื่องไม่ทำการตอบสนอง",
+                instruction: "1. ตรวจสอบสาย USB หรือสาย LAN ที่เชื่อมต่อกับปริ้นเตอร์ว่าหลุดหรือไม่\n2. ตรวจสอบว่ามีคิวงานค้างใน Print Queue หรือไม่ หากมีให้กด Cancel All Documents\n3. Restart บริการ Print Spooler ในเครื่องโฮสต์หลัก\n4. ทดสอบพิมพ์ Test Page ผ่านทางไดรเวอร์ตรง",
+                priority: "Low",
+                picture: "Picture_Userสอบถาม",
+                system: "Hardware / Device"
+            }
+        ];
+
+        let fcrs = [];
+
+        // Check and Load from LocalStorage, otherwise use defaults
+        function initDatabase() {
+            const stored = localStorage.getItem('fcr_database');
+            if (stored) {
+                fcrs = JSON.parse(stored);
+            } else {
+                fcrs = defaultFCRs;
+                localStorage.setItem('fcr_database', JSON.stringify(fcrs));
+            }
+            updateStats();
+            renderUserTable();
+            renderAdminTable();
+        }
+
+        // Save Current State to LocalStorage
+        function syncToStorage() {
+            localStorage.setItem('fcr_database', JSON.stringify(fcrs));
+            updateStats();
+        }
+
+        // Stat counter logic
+        function updateStats() {
+            document.getElementById('stat-total').innerText = fcrs.length;
+            
+            const oneClickCount = fcrs.filter(f => f.system === "One Click").length;
+            document.getElementById('stat-oneclick').innerText = oneClickCount;
+
+            const impCount = fcrs.filter(f => f.category === "IMPROVEMENT").length;
+            document.getElementById('stat-improvement').innerText = impCount;
+
+            const incCount = fcrs.filter(f => f.category === "INCIDENT" || f.category === "PROBLEM").length;
+            document.getElementById('stat-incidents').innerText = incCount;
+        }
+
+        // Toggle Views: Support View vs Admin View
+        function switchMode(mode) {
+            const userSec = document.getElementById('user-section');
+            const adminSec = document.getElementById('admin-section');
+            const btnUser = document.getElementById('btn-user-mode');
+            const btnAdmin = document.getElementById('btn-admin-mode');
+
+            if (mode === 'admin') {
+                userSec.classList.add('hidden');
+                adminSec.classList.remove('hidden');
+                btnAdmin.className = "px-4 py-2 rounded-md text-sm font-semibold transition-all duration-200 flex items-center gap-2 bg-white text-[#005088] shadow";
+                btnUser.className = "px-4 py-2 rounded-md text-sm font-semibold transition-all duration-200 flex items-center gap-2 text-slate-300 hover:text-white";
+                renderAdminTable();
+            } else {
+                adminSec.classList.add('hidden');
+                userSec.classList.remove('hidden');
+                btnUser.className = "px-4 py-2 rounded-md text-sm font-semibold transition-all duration-200 flex items-center gap-2 bg-white text-[#005088] shadow";
+                btnAdmin.className = "px-4 py-2 rounded-md text-sm font-semibold transition-all duration-200 flex items-center gap-2 text-slate-300 hover:text-white";
+                renderUserTable();
+            }
+        }
+
+        // ==================== RENDERING & INTERACTIVE VIEWS ====================
+
+        // Populate Main User View Table
+        function renderUserTable(dataList = fcrs) {
+            const tbody = document.getElementById('fcr-user-tbody');
+            const emptyState = document.getElementById('user-empty-state');
+            tbody.innerHTML = '';
+
+            if (dataList.length === 0) {
+                emptyState.classList.remove('hidden');
+                return;
+            }
+            emptyState.classList.add('hidden');
+
+            dataList.forEach((item, index) => {
+                const priorityStyles = getPriorityClass(item.priority);
+                
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="p-4 font-mono font-semibold text-[#005088]">${escapeHtml(item.id)}</td>
+                        <td class="p-4">
+                            <span class="px-2.5 py-0.5 text-xs font-semibold rounded bg-slate-100 text-slate-700">${escapeHtml(item.category)}</span>
+                        </td>
+                        <td class="p-4 text-slate-600 font-medium">${escapeHtml(item.system)}</td>
+                        <td class="p-4 text-slate-700 font-semibold">${escapeHtml(item.problem_type)}</td>
+                        <td class="p-4 text-center">
+                            <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full ${priorityStyles}">${escapeHtml(item.priority)}</span>
+                        </td>
+                        <td class="p-4 text-center">
+                            <button onclick="viewDetails('${escapeHtml(item.id)}')" class="p-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded transition-colors" title="ดูขั้นตอนแก้ไข">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        // Populate Admin Control Table
+        function renderAdminTable() {
+            const tbody = document.getElementById('fcr-admin-tbody');
+            const emptyState = document.getElementById('admin-empty-state');
+            tbody.innerHTML = '';
+
+            if (fcrs.length === 0) {
+                emptyState.classList.remove('hidden');
+                return;
+            }
+            emptyState.classList.add('hidden');
+
+            fcrs.forEach((item, index) => {
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50">
+                        <td class="p-4 font-mono text-[#005088] font-semibold">${escapeHtml(item.id)}</td>
+                        <td class="p-4 font-semibold text-slate-800">${escapeHtml(item.problem_type)}</td>
+                        <td class="p-4 text-slate-600">${escapeHtml(item.category)}</td>
+                        <td class="p-4 text-slate-600">${escapeHtml(item.system)}</td>
+                        <td class="p-4 text-center space-x-1.5 flex justify-center">
+                            <button onclick="editFCR(${index})" class="p-1.5 text-amber-600 hover:bg-amber-50 rounded transition-colors" title="แก้ไข">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </button>
+                            <button onclick="deleteFCR(${index})" class="p-1.5 text-rose-600 hover:bg-rose-50 rounded transition-colors" title="ลบ">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        // Get matching badge styles for Priority
+        function getPriorityClass(priority) {
+            switch(String(priority).toLowerCase()) {
+                case 'critical': return 'bg-rose-100 text-rose-800';
+                case 'high': return 'bg-amber-100 text-amber-800';
+                case 'medium': return 'bg-blue-100 text-blue-800';
+                default: return 'bg-slate-100 text-slate-800';
+            }
+        }
+
+        // Search Filter Engine
+        function filterFCR() {
+            const q = document.getElementById('user-search').value.toLowerCase();
+            const cat = document.getElementById('user-filter-cat').value;
+            const sys = document.getElementById('user-filter-sys').value;
+
+            const filtered = fcrs.filter(item => {
+                const matchQuery = item.id.toLowerCase().includes(q) || 
+                                   item.problem_type.toLowerCase().includes(q) || 
+                                   (item.symptom && item.symptom.toLowerCase().includes(q)) ||
+                                   item.instruction.toLowerCase().includes(q);
+                const matchCat = cat === "" || item.category === cat;
+                const matchSys = sys === "" || item.system === sys;
+
+                return matchQuery && matchCat && matchSys;
+            });
+
+            renderUserTable(filtered);
+        }
+
+        // ==================== MODAL MANAGEMENT ====================
+
+        function openAddModal() {
+            document.getElementById('fcr-form').reset();
+            document.getElementById('edit-index').value = "";
+            document.getElementById('modal-title').innerHTML = '<i class="fa-solid fa-file-circle-plus text-emerald-600"></i> เพิ่มข้อมูล FCR ใหม่';
+            
+            // Generate auto incremental FCR ID for ease of use
+            const nextNo = String(fcrs.length + 1).padStart(4, '0');
+            document.getElementById('f_id').value = `FCR_ITH_SDM_Desktop_${nextNo}`;
+            
+            const modal = document.getElementById('fcr-modal');
+            modal.classList.remove('hidden');
+            setTimeout(() => modal.children[0].classList.replace('scale-95', 'scale-100'), 50);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('fcr-modal');
+            modal.children[0].classList.replace('scale-100', 'scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 150);
+        }
+
+        function viewDetails(fcrId) {
+            const item = fcrs.find(f => f.id === fcrId);
+            if (!item) return;
+
+            document.getElementById('v-tag-id').innerText = item.id;
+            document.getElementById('v-title').innerText = item.problem_type;
+            document.getElementById('v-category').innerText = item.category;
+            document.getElementById('v-subcat').innerText = item.sub_cat || 'N/A';
+            document.getElementById('v-prodtype').innerText = item.prod_type || 'N/A';
+            document.getElementById('v-system').innerText = item.system || 'N/A';
+            document.getElementById('v-problem').innerText = item.symptom || 'ไม่ระบุ';
+            document.getElementById('v-instruction').innerText = item.instruction;
+            document.getElementById('v-priority').className = `font-semibold px-2.5 py-1 rounded ${getPriorityClass(item.priority)}`;
+            document.getElementById('v-priority').innerText = `Priority: ${item.priority}`;
+            document.getElementById('v-picture').innerHTML = `<i class="fa-regular fa-image"></i> อ้างอิงภาพคู่มือ: ${item.picture || 'N/A'}`;
+
+            const modal = document.getElementById('view-modal');
+            modal.classList.remove('hidden');
+            setTimeout(() => modal.children[0].classList.replace('scale-95', 'scale-100'), 50);
+        }
+
+        function closeViewModal() {
+            const modal = document.getElementById('view-modal');
+            modal.children[0].classList.replace('scale-100', 'scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 150);
+        }
+
+        // ==================== DATABASE TRANSACTION OPERATIONS (ADD, EDIT, DELETE) ====================
+
+        // Save (Add or Update)
+        function saveFCR(event) {
+            event.preventDefault();
+
+            const idx = document.getElementById('edit-index').value;
+            const itemData = {
+                id: document.getElementById('f_id').value,
+                category: document.getElementById('f_category').value,
+                sub_cat: document.getElementById('f_sub_cat').value,
+                prod_type: document.getElementById('f_prod_type').value,
+                problem_type: document.getElementById('f_problem_type').value,
+                symptom: document.getElementById('f_symptom').value,
+                instruction: document.getElementById('f_instruction').value,
+                priority: document.getElementById('f_priority').value,
+                picture: document.getElementById('f_picture').value || 'N/A',
+                system: document.getElementById('f_system').value
+            };
+
+            if (idx === "") {
+                // Add New FCR
+                // Check duplicate ID
+                if (fcrs.some(f => f.id === itemData.id)) {
+                    alert('พบข้อผิดพลาด: รหัส FCR ID นี้มีอยู่แล้วในระบบ กรุณาใช้รหัสอื่น');
+                    return;
+                }
+                fcrs.push(itemData);
+                alert('บันทึกข้อมูล FCR สำเร็จ!');
+            } else {
+                // Update Existing FCR
+                fcrs[parseInt(idx)] = itemData;
+                alert('อัปเดตข้อมูล FCR สำเร็จ!');
+            }
+
+            syncToStorage();
+            closeModal();
+            renderUserTable();
+            renderAdminTable();
+        }
+
+        // Edit Mode Form Trigger
+        function editFCR(index) {
+            const item = fcrs[index];
+            document.getElementById('edit-index').value = index;
+            document.getElementById('modal-title').innerHTML = `<i class="fa-solid fa-pen-to-square text-amber-500"></i> แก้ไขข้อมูล FCR: ${item.id}`;
+            
+            document.getElementById('f_id').value = item.id;
+            document.getElementById('f_category').value = item.category;
+            document.getElementById('f_sub_cat').value = item.sub_cat;
+            document.getElementById('f_prod_type').value = item.prod_type;
+            document.getElementById('f_problem_type').value = item.problem_type;
+            document.getElementById('f_symptom').value = item.symptom;
+            document.getElementById('f_instruction').value = item.instruction;
+            document.getElementById('f_priority').value = item.priority;
+            document.getElementById('f_picture').value = item.picture;
+            document.getElementById('f_system').value = item.system;
+
+            const modal = document.getElementById('fcr-modal');
+            modal.classList.remove('hidden');
+            setTimeout(() => modal.children[0].classList.replace('scale-95', 'scale-100'), 50);
+        }
+
+        // Delete FCR Record
+        function deleteFCR(index) {
+            const target = fcrs[index];
+            if (confirm(`คุณแน่ใจหรือไม่ที่จะลบรายการ FCR: ${target.id}?\nการกระทำนี้ไม่สามารถยกเลิกได้`)) {
+                fcrs.splice(index, 1);
+                syncToStorage();
+                renderAdminTable();
+                renderUserTable();
+                alert('ลบข้อมูลเรียบร้อยแล้ว');
+            }
+        }
+
+        // Helper to escape HTML characters securely
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // Initialize application database on load
+        window.onload = initDatabase;
+    </script>
+</body>
+</html>
