@@ -19,6 +19,7 @@
             --border-color: #334155;
             --shadow-color: rgba(0, 0, 0, 0.4);
             --glow-color: rgba(16, 185, 129, 0.25);
+            --holiday-color: #EF4444;
         }
 
         [data-theme="light"] {
@@ -30,6 +31,7 @@
             --border-color: #E2E8F0;
             --shadow-color: rgba(0, 0, 0, 0.05);
             --glow-color: rgba(16, 185, 129, 0.15);
+            --holiday-color: #DC2626;
         }
 
         * {
@@ -44,12 +46,12 @@
             background-color: var(--bg-body);
             color: var(--text-main);
             min-height: 100vh;
-            padding: 40px 20px;
+            padding: 30px 20px;
             background-image: radial-gradient(circle at 50% 0%, rgba(16, 185, 129, 0.08) 0%, transparent 70%);
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
         }
 
@@ -57,13 +59,13 @@
         .header-bar {
             background: var(--bg-card);
             backdrop-filter: blur(16px);
-            padding: 24px 32px;
+            padding: 20px 28px;
             border-radius: 20px;
             box-shadow: 0 10px 30px var(--shadow-color);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
             border: 1px solid var(--bg-card-border);
             position: relative;
             overflow: hidden;
@@ -86,7 +88,7 @@
         }
 
         .brand-title {
-            font-size: 22px;
+            font-size: 20px;
             font-weight: 700;
             line-height: 1.2;
             letter-spacing: -0.5px;
@@ -101,26 +103,29 @@
         .header-controls {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
 
-        .theme-toggle-btn {
+        .icon-btn {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
             color: var(--text-main);
-            width: 40px;
             height: 40px;
+            padding: 0 14px;
             border-radius: 12px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: 500;
         }
 
-        .theme-toggle-btn:hover {
+        .icon-btn:hover {
             border-color: var(--primary-green);
             box-shadow: 0 0 12px var(--glow-color);
+            color: var(--primary-green);
         }
 
         .header-badge {
@@ -165,8 +170,8 @@
 
         .search-input-group input {
             width: 100%;
-            padding: 18px 140px 18px 52px;
-            font-size: 16px;
+            padding: 16px 140px 16px 52px;
+            font-size: 15px;
             border-radius: 16px;
             border: 2px solid var(--border-color);
             background: var(--bg-card);
@@ -183,7 +188,7 @@
         .search-icon {
             position: absolute;
             left: 20px;
-            font-size: 20px;
+            font-size: 18px;
             pointer-events: none;
             opacity: 0.6;
         }
@@ -221,7 +226,7 @@
             color: var(--text-muted);
             border-radius: 6px;
             padding: 4px 8px;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 600;
         }
 
@@ -270,7 +275,7 @@
         }
 
         .dashboard-title {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: 700;
             display: flex;
             align-items: center;
@@ -278,7 +283,7 @@
         }
 
         .result-count {
-            font-size: 13px;
+            font-size: 12px;
             font-family: 'JetBrains Mono', monospace;
             color: var(--text-muted);
             background: var(--bg-card);
@@ -287,19 +292,18 @@
             border: 1px solid var(--border-color);
         }
 
-        /* Grid System */
+        /* Task Cards Grid (Full Width) */
         .card-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-            gap: 28px;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
         }
 
-        /* Task Card Style */
         .task-card {
             background-color: var(--bg-card);
             backdrop-filter: blur(10px);
             border-radius: 18px;
-            padding: 28px;
+            padding: 24px;
             box-shadow: 0 4px 20px var(--shadow-color);
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
             display: flex;
@@ -311,7 +315,7 @@
         }
 
         .task-card:hover {
-            transform: translateY(-6px);
+            transform: translateY(-4px);
             box-shadow: 0 15px 35px var(--glow-color);
             border-color: var(--primary-green);
         }
@@ -335,7 +339,6 @@
             background-color: var(--primary-red);
         }
 
-        /* Key Indicator */
         .key-num {
             position: absolute;
             top: 18px;
@@ -354,32 +357,32 @@
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 16px;
+            margin-bottom: 14px;
         }
 
         .card-icon {
-            width: 52px;
-            height: 52px;
+            width: 48px;
+            height: 48px;
             border-radius: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 26px;
+            font-size: 24px;
             background-color: rgba(255, 255, 255, 0.05);
         }
 
         .card-title {
-            font-size: 18px;
+            font-size: 17px;
             font-weight: 700;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             padding-right: 30px;
         }
 
         .card-desc {
-            font-size: 14px;
+            font-size: 13px;
             color: var(--text-muted);
             line-height: 1.6;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
             flex-grow: 1;
         }
 
@@ -388,13 +391,13 @@
             justify-content: space-between;
             align-items: center;
             border-top: 1px solid var(--border-color);
-            padding-top: 18px;
+            padding-top: 16px;
         }
 
         .badge {
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 600;
-            padding: 5px 12px;
+            padding: 4px 10px;
             border-radius: 30px;
         }
 
@@ -411,12 +414,12 @@
         .btn-open {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            padding: 10px 20px;
+            gap: 6px;
+            padding: 8px 16px;
             background-color: var(--primary-green);
             color: #ffffff;
             text-decoration: none;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 600;
             border-radius: 10px;
             box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
@@ -463,6 +466,214 @@
             border-radius: 18px;
             border: 1px dashed var(--border-color);
         }
+
+        /* MODAL CALENDAR POPUP */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.25s ease, visibility 0.25s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .calendar-widget {
+            background: var(--bg-body);
+            border-radius: 20px;
+            padding: 24px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 20px 50px var(--shadow-color);
+            width: 360px;
+            transform: scale(0.95);
+            transition: transform 0.25s ease;
+        }
+
+        .modal-overlay.active .calendar-widget {
+            transform: scale(1);
+        }
+
+        .cal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .cal-title {
+            font-size: 16px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .cal-controls {
+            display: flex;
+            gap: 6px;
+        }
+
+        .cal-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            border-radius: 8px;
+            width: 28px;
+            height: 28px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .cal-btn:hover {
+            border-color: var(--primary-green);
+            color: var(--primary-green);
+        }
+
+        .cal-select {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            border-radius: 8px;
+            padding: 2px 6px;
+            font-size: 12px;
+            outline: none;
+        }
+
+        .cal-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+            text-align: center;
+        }
+
+        .cal-day-name {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            padding-bottom: 6px;
+        }
+
+        .cal-day {
+            font-size: 12px;
+            padding: 8px 0;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid transparent;
+            position: relative;
+            cursor: default;
+        }
+
+        .cal-day.empty {
+            background: transparent;
+        }
+
+        .cal-day.today {
+            border-color: var(--primary-green);
+            background: rgba(16, 185, 129, 0.15);
+            font-weight: bold;
+            color: var(--primary-green);
+        }
+
+        .cal-day.holiday {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--holiday-color);
+            font-weight: bold;
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .cal-day.holiday::after {
+            content: '';
+            position: absolute;
+            bottom: 2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background-color: var(--holiday-color);
+        }
+
+        .holiday-list-container {
+            margin-top: 16px;
+            border-top: 1px dashed var(--border-color);
+            padding-top: 12px;
+        }
+
+        .holiday-list-title {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .holiday-items {
+            max-height: 160px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .holiday-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 6px 8px;
+            border-radius: 8px;
+            border-left: 3px solid var(--holiday-color);
+        }
+
+        .holiday-date {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: bold;
+            color: var(--holiday-color);
+            white-space: nowrap;
+        }
+
+        .holiday-name {
+            color: var(--text-main);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .btn-close-modal {
+            background: var(--border-color);
+            border: none;
+            color: var(--text-muted);
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .btn-close-modal:hover {
+            background: var(--primary-red);
+            color: white;
+        }
     </style>
 </head>
 <body data-theme="dark">
@@ -482,188 +693,236 @@
                 </div>
             </div>
             <div class="header-controls">
-                <button class="theme-toggle-btn" id="themeBtn" onclick="toggleTheme()" title="สลับโหมด มืด/สว่าง">🌙</button>
+                <button class="icon-btn" onclick="toggleCalendarModal()" title="เปิดปฏิทินวันหยุด">📅 วันหยุด</button>
+                <button class="icon-btn" id="themeBtn" onclick="toggleTheme()" title="สลับโหมด มืด/สว่าง">🌙</button>
                 <div class="header-badge">
                     <span class="status-dot"></span> System Online
                 </div>
             </div>
         </div>
 
-        <!-- SEARCH BAR -->
-        <div class="search-wrapper">
-            <div class="search-input-group">
-                <span class="search-icon">🔍</span>
-                <input type="text" id="searchInput" placeholder="พิมพ์คำค้นหา... (กด '/' หรือ 'Ctrl+K' เพื่อโฟกัส)" onkeyup="filterCards()">
-                <div class="search-controls">
-                    <button class="btn-clear" id="btnClear" onclick="clearSearch()">✕</button>
-                    <span class="shortcut-badge">CTRL + K</span>
+        <!-- Dashboard Content -->
+        <div class="dashboard-content">
+            <!-- SEARCH BAR -->
+            <div class="search-wrapper">
+                <div class="search-input-group">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="searchInput" placeholder="พิมพ์คำค้นหา... (กด '/' หรือ 'Ctrl+K' เพื่อโฟกัส)" onkeyup="filterCards()">
+                    <div class="search-controls">
+                        <button class="btn-clear" id="btnClear" onclick="clearSearch()">✕</button>
+                        <span class="shortcut-badge">CTRL + K</span>
+                    </div>
                 </div>
+            </div>
+
+            <!-- FILTER TABS -->
+            <div class="filter-tabs">
+                <button class="tab-btn active" id="tab-all" onclick="filterTab('all', this)">⚡ ทั้งหมด</button>
+                <button class="tab-btn" id="tab-green" onclick="filterTab('green', this)">🟢 งานทั่วไป / รายงาน</button>
+                <button class="tab-btn tab-red" id="tab-red" onclick="filterTab('red', this)">🔴 เคสวิกฤต / ตรวจสอบ</button>
+                <button class="tab-btn" id="tab-disabled" onclick="filterTab('disabled', this)">⚙️ พัฒนาเพิ่มเติม</button>
+            </div>
+
+            <!-- DASHBOARD TITLE -->
+            <div class="dashboard-header-flex">
+                <div class="dashboard-title">
+                    📌 รายการงานระบบปฏิบัติการ
+                </div>
+                <div class="result-count" id="resultCount">SYSTEM READY</div>
+            </div>
+
+            <!-- CARDS GRID -->
+            <div class="card-grid" id="cardGrid">
+                
+                <!-- Card 1 -->
+                <div class="task-card accent-red" data-category="red" data-key="1">
+                    <span class="key-num">[1]</span>
+                    <div>
+                        <div class="card-header-wrapper">
+                            <div class="card-icon">🚨</div>
+                        </div>
+                        <div class="card-title">จัดทำไฟล์ EMP</div>
+                        <div class="card-desc">
+                          จัดทำไฟล์ EMP สำหรับบันทึกและตรวจสอบข้อมูลพนักงาน
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span class="badge badge-green">พร้อมใช้งาน</span>
+                        <a href="indexGemfile-Emp.html" target="_blank" class="btn-open btn-red target-link">เปิดใช้งาน ➔</a>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="task-card accent-red" data-category="red" data-key="2">
+                    <span class="key-num">[2]</span>
+                    <div>
+                        <div class="card-header-wrapper">
+                            <div class="card-icon">🚨</div>
+                        </div>
+                        <div class="card-title">INCIDENT</div>
+                        <div class="card-desc">
+                            ระบบจัดการเคสและปิดเคส Incident ประจำวันของระบบหน้าร้านและอุปกรณ์
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span class="badge badge-green">พร้อมใช้งาน</span>
+                        <a href="https://itsm.cpall.co.th/incidents" target="_blank" class="btn-open btn-red target-link">เปิดใช้งาน ➔</a>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="task-card" data-category="green" data-key="3">
+                    <span class="key-num">[3]</span>
+                    <div>
+                        <div class="card-header-wrapper">
+                            <div class="card-icon">📊</div>
+                        </div>
+                        <div class="card-title">ช่วยชนข้อมูล Excel v.1</div>
+                        <div class="card-desc">
+                            เครื่องมือช่วยเปรียบเทียบและกระทบยอดข้อมูลจากไฟล์ Excel
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span class="badge badge-green">พร้อมใช้งาน</span>
+                        <a href="index-match-tool.html" class="btn-open target-link">เปิดใช้งาน ➔</a>
+                    </div>
+                </div>
+
+                <!-- Card 4 -->
+                <div class="task-card accent-red" data-category="red" data-key="4">
+                    <span class="key-num">[4]</span>
+                    <div>
+                        <div class="card-header-wrapper">
+                            <div class="card-icon">🖥️</div>
+                        </div>
+                        <div class="card-title">เช็คลิสต์ เครื่องทดสอบ</div>
+                        <div class="card-desc">
+                            แบบฟอร์มตรวจสอบและบันทึกสถานะการ Set เครื่องทดสอบฮาร์ดแวร์บน SharePoint
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span class="badge badge-green">พร้อมใช้งาน</span>
+                        <a href="https://cpallgroup.sharepoint.com/:x:/r/sites/ithardwarestoresupportunit/Shared%20Documents/WorkDesktop/Set%E0%B9%80%E0%B8%84%E0%B8%A3%E0%B8%B7%E0%B9%88%E0%B8%AD%E0%B8%87/Set%20%E0%B9%80%E0%B8%84%E0%B8%A3%E0%B8%B7%E0%B9%88%E0%B8%AD%E0%B8%87.xlsx?d=wcf799ebba1c24e55a11fec66ef543e10&csf=1&web=1&e=7BuHBm" target="_blank" class="btn-open btn-red target-link">เปิดใช้งาน ➔</a>
+                    </div>
+                </div>
+
+                <!-- Card 5 -->
+                <div class="task-card" data-category="green" data-key="5">
+                    <span class="key-num">[5]</span>
+                    <div>
+                        <div class="card-header-wrapper">
+                            <div class="card-icon">📖</div>
+                        </div>
+                        <div class="card-title">คู่มือ</div>
+                        <div class="card-desc">
+                            คู่มือการปฏิบัติงานสำหรับช่างฮาร์ดแวร์และเจ้าหน้าที่เทคนิค
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span class="badge badge-green">พร้อมใช้งาน</span>
+                        <a href="คู่มือ.html" class="btn-open target-link">เปิดใช้งาน ➔</a>
+                    </div>
+                </div>
+
+                <!-- Card FCR -->
+                <div class="task-card accent-red" data-category="red">
+                    <div>
+                        <div class="card-header-wrapper">
+                            <div class="card-icon">🚨</div>
+                        </div>
+                        <div class="card-title">FCR</div>
+                        <div class="card-desc">
+                            ระบบบันทึกและติดตาม First Contact Resolution
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span class="badge badge-green">พร้อมใช้งาน</span>
+                        <a href="fcr.html" target="_blank" class="btn-open btn-red target-link">เปิดใช้งาน ➔</a>
+                    </div>
+                </div>
+
+                <!-- Card Disabled -->
+                <div class="task-card disabled" data-category="disabled">
+                    <div>
+                        <div class="card-header-wrapper">
+                            <div class="card-icon">⚙️</div>
+                        </div>
+                        <div class="card-title">ระบบสำรองในอนาคต</div>
+                        <div class="card-desc">
+                            พื้นที่รองรับฟังก์ชันการทำงานใหม่ๆ ที่จะพัฒนาเพิ่มเติมในอนาคต
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span class="badge badge-disabled">Coming Soon</span>
+                        <a href="#" class="btn-open disabled">ปิดอยู่</a>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- NO RESULTS -->
+            <div class="no-results" id="noResults">
+                <div style="font-size: 40px; margin-bottom: 10px;">⚠️</div>
+                <h3>ไม่พบข้อมูลที่ตรงกับคำค้นหา</h3>
+                <p style="color: var(--text-muted); font-size: 13px; margin-top: 4px;">ลองค้นหาด้วยคีย์เวิร์ดอื่น หรือกดปุ่มล้างคำค้นหา</p>
             </div>
         </div>
+    </div>
 
-        <!-- FILTER TABS -->
-        <div class="filter-tabs">
-            <button class="tab-btn active" id="tab-all" onclick="filterTab('all', this)">⚡ ทั้งหมด</button>
-            <button class="tab-btn" id="tab-green" onclick="filterTab('green', this)">🟢 งานทั่วไป / รายงาน</button>
-            <button class="tab-btn tab-red" id="tab-red" onclick="filterTab('red', this)">🔴 เคสวิกฤต / ตรวจสอบ</button>
-            <button class="tab-btn" id="tab-disabled" onclick="filterTab('disabled', this)">⚙️ พัฒนาเพิ่มเติม</button>
-        </div>
-
-        <!-- DASHBOARD TITLE -->
-        <div class="dashboard-header-flex">
-            <div class="dashboard-title">
-                📌 รายการงานระบบปฏิบัติการ
-            </div>
-            <div class="result-count" id="resultCount">SYSTEM READY</div>
-        </div>
-
-        <!-- CARDS GRID -->
-        <div class="card-grid" id="cardGrid">
-            
-            <!-- Card 1 -->
-            <div class="task-card accent-red" data-category="red" data-key="2">
-                <span class="key-num">[2]</span>
-                <div>
-                    <div class="card-header-wrapper">
-                        <div class="card-icon">🚨</div>
+    <!-- CALENDAR MODAL POPUP -->
+    <div class="modal-overlay" id="calModal" onclick="closeModalOnOutside(event)">
+        <div class="calendar-widget">
+            <div class="cal-header">
+                <div class="cal-title">📅 ปฏิทินวันหยุดไทย</div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div class="cal-controls">
+                        <button class="cal-btn" onclick="changeMonth(-1)" title="เดือนก่อนหน้า">❮</button>
+                        <select class="cal-select" id="monthSelect" onchange="onDateSelectChange()"></select>
+                        <select class="cal-select" id="yearSelect" onchange="onDateSelectChange()"></select>
+                        <button class="cal-btn" onclick="changeMonth(1)" title="เดือนถัดไป">❯</button>
                     </div>
-                    <div class="card-title">จัดทำไฟล์ EMP</div>
-                    <div class="card-desc">
-                      จัดทำไฟล์ EMP
-                    </div>
-                </div>
-                <div class="card-footer">
-                    <span class="badge badge-green">พร้อมใช้งาน</span>
-                    <a href="indexGemfile-Emp.html" target="_blank" class="btn-open btn-red target-link">เปิดใช้งาน ➔</a>
+                    <button class="btn-close-modal" onclick="toggleCalendarModal()" title="ปิด">✕</button>
                 </div>
             </div>
 
-            <!-- Card 2 -->
-            <div class="task-card accent-red" data-category="red" data-key="2">
-                <span class="key-num">[2]</span>
-                <div>
-                    <div class="card-header-wrapper">
-                        <div class="card-icon">🚨</div>
-                    </div>
-                    <div class="card-title">INCIDENT</div>
-                    <div class="card-desc">
-                        ระบบจัดการเคสและปิดเคส Incident ประจำวันของระบบหน้าร้านและอุปกรณ์
-                    </div>
-                </div>
-                <div class="card-footer">
-                    <span class="badge badge-green">พร้อมใช้งาน</span>
-                    <a href="https://itsm.cpall.co.th/incidents" target="_blank" class="btn-open btn-red target-link">เปิดใช้งาน ➔</a>
-                </div>
+            <div class="cal-grid">
+                <div class="cal-day-name">อา</div>
+                <div class="cal-day-name">จ</div>
+                <div class="cal-day-name">อ</div>
+                <div class="cal-day-name">พ</div>
+                <div class="cal-day-name">พฤ</div>
+                <div class="cal-day-name">ศ</div>
+                <div class="cal-day-name">ส</div>
             </div>
 
-            <!-- Card 3 -->
-            <div class="task-card" data-category="green" data-key="3">
-                <span class="key-num">[3]</span>
-                <div>
-                    <div class="card-header-wrapper">
-                        <div class="card-icon">📊</div>
-                    </div>
-                    <div class="card-title">ช่วยชนข้อมูล Excel v.1</div>
-                    <div class="card-desc">
-                        ช่วยชนข้อมูล Excel
-                    </div>
-                </div>
-                <div class="card-footer">
-                    <span class="badge badge-green">พร้อมใช้งาน</span>
-                    <a href="index-match-tool.html" class="btn-open target-link">เปิดใช้งาน ➔</a>
-                </div>
+            <div class="cal-grid" id="calendarDays">
+                <!-- Rendered by JS -->
             </div>
 
-            <!-- Card 4 -->
-            <div class="task-card accent-red" data-category="red" data-key="4">
-                <span class="key-num">[4]</span>
-                <div>
-                    <div class="card-header-wrapper">
-                        <div class="card-icon">🖥️</div>
-                    </div>
-                    <div class="card-title">เช็คลิสต์ เครื่องทดสอบ</div>
-                    <div class="card-desc">
-                        แบบฟอร์มตรวจสอบและบันทึกสถานะการ Set เครื่องทดสอบฮาร์ดแวร์บน SharePoint
-                    </div>
+            <div class="holiday-list-container">
+                <div class="holiday-list-title">
+                    <span>🎉 วันหยุดประจำเดือน</span>
+                    <span id="currentMonthYearText" style="font-family: 'JetBrains Mono'; color: var(--primary-green);"></span>
                 </div>
-                <div class="card-footer">
-                    <span class="badge badge-green">พร้อมใช้งาน</span>
-                    <a href="https://cpallgroup.sharepoint.com/:x:/r/sites/ithardwarestoresupportunit/Shared%20Documents/WorkDesktop/Set%E0%B9%80%E0%B8%84%E0%B8%A3%E0%B8%B7%E0%B9%88%E0%B8%AD%E0%B8%87/Set%20%E0%B9%80%E0%B8%84%E0%B8%A3%E0%B8%B7%E0%B9%88%E0%B8%AD%E0%B8%87.xlsx?d=wcf799ebba1c24e55a11fec66ef543e10&csf=1&web=1&e=7BuHBm" target="_blank" class="btn-open btn-red target-link">เปิดใช้งาน ➔</a>
+                <div class="holiday-items" id="holidayList">
+                    <!-- Rendered by JS -->
                 </div>
             </div>
-
-            <!-- Card 5 -->
-            <div class="task-card" data-category="green" data-key="5">
-                <span class="key-num">[5]</span>
-                <div>
-                    <div class="card-header-wrapper">
-                        <div class="card-icon">📖</div>
-                    </div>
-                    <div class="card-title">คู่มือ</div>
-                    <div class="card-desc">
-                        คู่มือการปฏิบัติงานสำหรับช่างฮาร์ดแวร์และเจ้าหน้าที่เทคนิค
-                    </div>
-                </div>
-                <div class="card-footer">
-                    <span class="badge badge-green">พร้อมใช้งาน</span>
-                    <a href="คู่มือ.html" class="btn-open target-link">เปิดใช้งาน ➔</a>
-                </div>
-            </div>
-            <div class="task-card accent-red" data-category="red" data-key="2">
-                <span class="key-num">[2]</span>
-                <div>
-                    <div class="card-header-wrapper">
-                        <div class="card-icon">🚨</div>
-                    </div>
-                    <div class="card-title">FCR</div>
-                    <div class="card-desc">
-                      FCR
-                    </div>
-                </div>
-                <div class="card-footer">
-                    <span class="badge badge-green">พร้อมใช้งาน</span>
-                    <a href="fcr.html" target="_blank" class="btn-open btn-red target-link">เปิดใช้งาน ➔</a>
-                </div>
-            </div>
-            <!-- Card 6 -->
-            <div class="task-card disabled" data-category="disabled">
-                <div>
-                    <div class="card-header-wrapper">
-                        <div class="card-icon">⚙️</div>
-                    </div>
-                    <div class="card-title">ระบบสำรองในอนาคต</div>
-                    <div class="card-desc">
-                        พื้นที่รองรับฟังก์ชันการทำงานใหม่ๆ ที่จะพัฒนาเพิ่มเติมในอนาคต
-                    </div>
-                </div>
-                <div class="card-footer">
-                    <span class="badge badge-disabled">Coming Soon</span>
-                    <a href="#" class="btn-open disabled">ปิดอยู่</a>
-                </div>
-            </div>
-
-        </div>
-
-        <!-- NO RESULTS -->
-        <div class="no-results" id="noResults">
-            <div style="font-size: 40px; margin-bottom: 10px;">⚠️</div>
-            <h3>ไม่พบข้อมูลที่ตรงกับคำค้นหา</h3>
-            <p style="color: var(--text-muted); font-size: 14px; margin-top: 4px;">ลองค้นหาด้วยคีย์เวิร์ดอื่น หรือกดปุ่มล้างคำค้นหา</p>
         </div>
     </div>
 
     <!-- SCRIPT -->
     <script>
+        // ----------------------------------------------------
+        // 1. App State & Theme Init
+        // ----------------------------------------------------
         let currentTab = localStorage.getItem('gosoft_tab') || 'all';
 
-        // Initialize App
         document.addEventListener('DOMContentLoaded', () => {
-            // Load Saved Theme
             const savedTheme = localStorage.getItem('gosoft_theme') || 'dark';
             document.body.setAttribute('data-theme', savedTheme);
             document.getElementById('themeBtn').innerText = savedTheme === 'dark' ? '🌙' : '☀️';
 
-            // Store Raw Text for Highlighting
             document.querySelectorAll('.task-card').forEach(card => {
                 const titleEl = card.querySelector('.card-title');
                 const descEl = card.querySelector('.card-desc');
@@ -671,7 +930,6 @@
                 if (descEl) card.dataset.rawDesc = descEl.innerText;
             });
 
-            // Restore Saved Search & Tab
             const savedQuery = localStorage.getItem('gosoft_query') || '';
             document.getElementById('searchInput').value = savedQuery;
 
@@ -682,9 +940,10 @@
             }
 
             filterCards();
+            initYearOptions();
+            initCalendar();
         });
 
-        // 1. Theme Toggle
         function toggleTheme() {
             const current = document.body.getAttribute('data-theme');
             const next = current === 'dark' ? 'light' : 'dark';
@@ -693,17 +952,36 @@
             document.getElementById('themeBtn').innerText = next === 'dark' ? '🌙' : '☀️';
         }
 
-        // 2. Global Keydown Shortcuts
+        // ----------------------------------------------------
+        // 2. Modal Calendar Toggle
+        // ----------------------------------------------------
+        function toggleCalendarModal() {
+            const modal = document.getElementById('calModal');
+            modal.classList.toggle('active');
+        }
+
+        function closeModalOnOutside(event) {
+            if (event.target.id === 'calModal') {
+                toggleCalendarModal();
+            }
+        }
+
+        // ----------------------------------------------------
+        // 3. Filter & Search Logic
+        // ----------------------------------------------------
         window.addEventListener('keydown', (e) => {
             const isInputFocused = document.activeElement.tagName === 'INPUT';
 
-            // Ctrl+K or '/' to Focus Search
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('calModal');
+                if (modal.classList.contains('active')) modal.classList.remove('active');
+            }
+
             if ((e.key === '/' || (e.ctrlKey && e.key.toLowerCase() === 'k')) && !isInputFocused) {
                 e.preventDefault();
                 document.getElementById('searchInput').focus();
             }
 
-            // Quick Launch Keys (1-5) when NOT typing
             if (!isInputFocused && e.key >= '1' && e.key <= '5') {
                 const targetCard = document.querySelector(`.task-card[data-key="${e.key}"]`);
                 if (targetCard && targetCard.style.display !== 'none') {
@@ -713,7 +991,6 @@
             }
         });
 
-        // 3. Filter Cards Function
         function filterCards() {
             const inputEl = document.getElementById('searchInput');
             const query = inputEl.value.trim().toLowerCase();
@@ -721,7 +998,6 @@
             const cards = document.querySelectorAll('.card-grid .task-card');
             let visibleCount = 0;
 
-            // Save Search State
             localStorage.setItem('gosoft_query', query);
             btnClear.style.display = query.length > 0 ? 'flex' : 'none';
 
@@ -747,7 +1023,6 @@
             document.getElementById('noResults').style.display = (visibleCount === 0) ? 'block' : 'none';
         }
 
-        // 4. Tab Switching
         function filterTab(category, btnElement) {
             currentTab = category;
             localStorage.setItem('gosoft_tab', category);
@@ -756,7 +1031,6 @@
             filterCards();
         }
 
-        // 5. Clear Search Input
         function clearSearch() {
             const inputEl = document.getElementById('searchInput');
             inputEl.value = '';
@@ -764,7 +1038,6 @@
             inputEl.focus();
         }
 
-        // Highlight Helper
         function highlightText(element, text, query) {
             if (!element) return;
             if (!query) {
@@ -777,6 +1050,166 @@
 
         function escapeRegExp(string) {
             return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
+        // ----------------------------------------------------
+        // 4. Dynamic Thai Calendar & Universal Holiday Generator
+        // ----------------------------------------------------
+        const monthNamesThai = [
+            "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
+            "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"
+        ];
+
+        let calDate = new Date();
+
+        function initYearOptions() {
+            const yearSelect = document.getElementById('yearSelect');
+            yearSelect.innerHTML = '';
+            const currentYear = new Date().getFullYear();
+
+            for (let y = currentYear - 5; y <= currentYear + 10; y++) {
+                const opt = document.createElement('option');
+                opt.value = y;
+                opt.innerText = `พ.ศ. ${y + 543}`;
+                yearSelect.appendChild(opt);
+            }
+        }
+
+        function initCalendar() {
+            const monthSelect = document.getElementById('monthSelect');
+            monthSelect.innerHTML = '';
+            monthNamesThai.forEach((name, index) => {
+                const opt = document.createElement('option');
+                opt.value = index;
+                opt.innerText = name;
+                monthSelect.appendChild(opt);
+            });
+            renderCalendar();
+        }
+
+        function getThaiHolidays(year) {
+            const holidays = {
+                [`${year}-01-01`]: "วันขึ้นปีใหม่",
+                [`${year}-04-06`]: "วันจักรี",
+                [`${year}-04-13`]: "วันสงกรานต์",
+                [`${year}-04-14`]: "วันสงกรานต์",
+                [`${year}-04-15`]: "วันสงกรานต์",
+                [`${year}-05-01`]: "วันแรงงานแห่งชาติ",
+                [`${year}-05-04`]: "วันฉัตรมงคล",
+                [`${year}-06-03`]: "วันเฉลิมพระชนมพรรษา สมเด็จพระนางเจ้าฯ พระบรมราชินี",
+                [`${year}-07-28`]: "วันเฉลิมพระชนมพรรษา พระบาทสมเด็จพระวชิรเกล้าเจ้าอยู่หัว",
+                [`${year}-08-12`]: "วันแม่แห่งชาติ",
+                [`${year}-10-13`]: "วันนวมินทรมหาราช",
+                [`${year}-10-23`]: "วันปิยมหาราช",
+                [`${year}-12-05`]: "วันพ่อแห่งชาติ",
+                [`${year}-12-10`]: "วันรัฐธรรมนูญ",
+                [`${year}-12-31`]: "วันสิ้นปี"
+            };
+
+            const dynamicHolidays = {};
+            Object.keys(holidays).forEach(dateStr => {
+                dynamicHolidays[dateStr] = holidays[dateStr];
+                const d = new Date(dateStr);
+                const dayOfWeek = d.getDay();
+                
+                if (dayOfWeek === 6) {
+                    const compDate = new Date(d);
+                    compDate.setDate(d.getDate() + 2);
+                    const compKey = formatDateKey(compDate);
+                    dynamicHolidays[compKey] = `ชดเชย${holidays[dateStr]}`;
+                } else if (dayOfWeek === 0) {
+                    const compDate = new Date(d);
+                    compDate.setDate(d.getDate() + 1);
+                    const compKey = formatDateKey(compDate);
+                    dynamicHolidays[compKey] = `ชดเชย${holidays[dateStr]}`;
+                }
+            });
+
+            return dynamicHolidays;
+        }
+
+        function formatDateKey(dateObj) {
+            const y = dateObj.getFullYear();
+            const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const d = String(dateObj.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+
+        function renderCalendar() {
+            const year = calDate.getFullYear();
+            const month = calDate.getMonth();
+            
+            document.getElementById('monthSelect').value = month;
+            document.getElementById('yearSelect').value = year;
+            document.getElementById('currentMonthYearText').innerText = `${monthNamesThai[month]} ${year + 543}`;
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const today = new Date();
+
+            const calGrid = document.getElementById('calendarDays');
+            calGrid.innerHTML = '';
+
+            const holidays = getThaiHolidays(year);
+            const monthHolidays = [];
+
+            for (let i = 0; i < firstDay; i++) {
+                const empty = document.createElement('div');
+                empty.className = 'cal-day empty';
+                calGrid.appendChild(empty);
+            }
+
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dayEl = document.createElement('div');
+                dayEl.className = 'cal-day';
+                dayEl.innerText = d;
+
+                const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+
+                if (today.getFullYear() === year && today.getMonth() === month && today.getDate() === d) {
+                    dayEl.classList.add('today');
+                }
+
+                if (holidays[dateKey]) {
+                    dayEl.classList.add('holiday');
+                    dayEl.title = holidays[dateKey];
+                    monthHolidays.push({
+                        dateStr: `${d} ${monthNamesThai[month].substring(0, 3)}.`,
+                        name: holidays[dateKey]
+                    });
+                }
+
+                calGrid.appendChild(dayEl);
+            }
+
+            const listEl = document.getElementById('holidayList');
+            listEl.innerHTML = '';
+
+            if (monthHolidays.length === 0) {
+                listEl.innerHTML = `<div style="color: var(--text-muted); font-size: 12px; text-align: center; padding: 10px;">ไม่มีวันหยุดตามประเพณีในเดือนนี้</div>`;
+            } else {
+                monthHolidays.forEach(h => {
+                    const item = document.createElement('div');
+                    item.className = 'holiday-item';
+                    item.innerHTML = `
+                        <span class="holiday-date">${h.dateStr}</span>
+                        <span class="holiday-name" title="${h.name}">${h.name}</span>
+                    `;
+                    listEl.appendChild(item);
+                });
+            }
+        }
+
+        function changeMonth(delta) {
+            calDate.setMonth(calDate.getMonth() + delta);
+            renderCalendar();
+        }
+
+        function onDateSelectChange() {
+            const m = parseInt(document.getElementById('monthSelect').value);
+            const y = parseInt(document.getElementById('yearSelect').value);
+            calDate.setFullYear(y, m, 1);
+            renderCalendar();
         }
     </script>
 </body>
