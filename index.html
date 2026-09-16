@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GOSOFT - IT Hardware Command Center</title>
+    
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -126,6 +127,17 @@
             border-color: var(--primary-green);
             box-shadow: 0 0 12px var(--glow-color);
             color: var(--primary-green);
+        }
+
+        .btn-logout {
+            border-color: var(--primary-red) !important;
+            color: var(--primary-red) !important;
+        }
+
+        .btn-logout:hover {
+            background: var(--primary-red) !important;
+            color: white !important;
+            box-shadow: 0 0 12px rgba(225, 29, 72, 0.4) !important;
         }
 
         .header-badge {
@@ -292,7 +304,7 @@
             border: 1px solid var(--border-color);
         }
 
-        /* Task Cards Grid (Full Width) */
+        /* Task Cards Grid */
         .card-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -451,13 +463,6 @@
             pointer-events: none;
         }
 
-        mark.highlight {
-            background: #FDE047;
-            color: #000;
-            border-radius: 3px;
-            padding: 0 2px;
-        }
-
         .no-results {
             display: none;
             text-align: center;
@@ -467,14 +472,14 @@
             border: 1px dashed var(--border-color);
         }
 
-        /* MODAL CALENDAR POPUP */
+        /* MODALS */
         .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: rgba(15, 23, 42, 0.75);
+            background: rgba(15, 23, 42, 0.8);
             backdrop-filter: blur(8px);
             display: flex;
             align-items: center;
@@ -490,19 +495,56 @@
             visibility: visible;
         }
 
+        /* TIMEOUT WARN POPUP */
+        .timeout-box {
+            background: var(--bg-body);
+            border: 1px solid var(--primary-red);
+            border-radius: 20px;
+            padding: 30px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(225, 29, 72, 0.3);
+            transform: scale(0.95);
+            transition: transform 0.25s ease;
+        }
+
+        .modal-overlay.active .timeout-box {
+            transform: scale(1);
+        }
+
+        .countdown-num {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 48px;
+            font-weight: 700;
+            color: var(--primary-red);
+            margin: 15px 0;
+        }
+
+        .btn-keep-login {
+            background: var(--primary-green);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .btn-keep-login:hover {
+            background: var(--primary-green-hover);
+        }
+
+        /* CALENDAR WIDGET */
         .calendar-widget {
             background: var(--bg-body);
             border-radius: 20px;
             padding: 24px;
             border: 1px solid var(--border-color);
             box-shadow: 0 20px 50px var(--shadow-color);
-            width: 360px;
-            transform: scale(0.95);
-            transition: transform 0.25s ease;
-        }
-
-        .modal-overlay.active .calendar-widget {
-            transform: scale(1);
+            width: 380px;
         }
 
         .cal-header {
@@ -523,6 +565,7 @@
         .cal-controls {
             display: flex;
             gap: 6px;
+            align-items: center;
         }
 
         .cal-btn {
@@ -559,6 +602,7 @@
             grid-template-columns: repeat(7, 1fr);
             gap: 6px;
             text-align: center;
+            margin-top: 10px;
         }
 
         .cal-day-name {
@@ -575,7 +619,6 @@
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid transparent;
             position: relative;
-            cursor: default;
         }
 
         .cal-day.empty {
@@ -624,7 +667,7 @@
         }
 
         .holiday-items {
-            max-height: 160px;
+            max-height: 140px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
@@ -695,8 +738,9 @@
             <div class="header-controls">
                 <button class="icon-btn" onclick="toggleCalendarModal()" title="เปิดปฏิทินวันหยุด">📅 วันหยุด</button>
                 <button class="icon-btn" id="themeBtn" onclick="toggleTheme()" title="สลับโหมด มืด/สว่าง">🌙</button>
+                <button class="icon-btn btn-logout" onclick="handleLogout()" title="ออกจากระบบ">🚪 ออกจากระบบ</button>
                 <div class="header-badge">
-                    <span class="status-dot"></span> System Online
+                    <span class="status-dot"></span> User: <span id="currentUser" style="margin-left: 4px;">User</span>
                 </div>
             </div>
         </div>
@@ -743,7 +787,7 @@
                         </div>
                         <div class="card-title">จัดทำไฟล์ EMP</div>
                         <div class="card-desc">
-                          จัดทำไฟล์ EMP สำหรับบันทึกและตรวจสอบข้อมูลพนักงาน
+                            จัดทำไฟล์ EMP สำหรับบันทึกและตรวจสอบข้อมูลพนักงาน
                         </div>
                     </div>
                     <div class="card-footer">
@@ -869,348 +913,342 @@
         </div>
     </div>
 
+    <!-- TIMEOUT WARNING POPUP -->
+    <div class="modal-overlay" id="timeoutModal">
+        <div class="timeout-box">
+            <div style="font-size: 40px; margin-bottom: 10px;">⚠️</div>
+            <h3 style="font-size: 18px; font-weight: 700;">ระบบกำลังจะหมดอายุ!</h3>
+            <p style="font-size: 13px; color: var(--text-muted); margin-top: 6px;">คุณไม่ได้ใช้งานระบบเป็นเวลานาน ระบบจะ Logout อัตโนมัติใน</p>
+            <div class="countdown-num" id="countdownTimer">60</div>
+            <button class="btn-keep-login" onclick="resetInactivityTimer()">อยู่ใช้งานระบบต่อ ➔</button>
+        </div>
+    </div>
+
     <!-- CALENDAR MODAL POPUP -->
     <div class="modal-overlay" id="calModal" onclick="closeModalOnOutside(event)">
         <div class="calendar-widget">
             <div class="cal-header">
                 <div class="cal-title">📅 ปฏิทินวันหยุดไทย</div>
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <div class="cal-controls">
-                        <button class="cal-btn" onclick="changeMonth(-1)" title="เดือนก่อนหน้า">❮</button>
-                        <select class="cal-select" id="monthSelect" onchange="onDateSelectChange()"></select>
-                        <select class="cal-select" id="yearSelect" onchange="onDateSelectChange()"></select>
-                        <button class="cal-btn" onclick="changeMonth(1)" title="เดือนถัดไป">❯</button>
-                    </div>
-                    <button class="btn-close-modal" onclick="toggleCalendarModal()" title="ปิด">✕</button>
-                </div>
+                <button class="btn-close-modal" onclick="toggleCalendarModal()">✕</button>
             </div>
-
+            <div class="cal-controls">
+                <select id="calMonth" class="cal-select" onchange="renderCalendar()"></select>
+                <select id="calYear" class="cal-select" onchange="renderCalendar()"></select>
+                <button class="cal-btn" onclick="prevMonth()">◄</button>
+                <button class="cal-btn" onclick="nextMonth()">►</button>
+            </div>
             <div class="cal-grid">
-                <div class="cal-day-name">อา</div>
+                <div class="cal-day-name" style="color: var(--holiday-color);">อา</div>
                 <div class="cal-day-name">จ</div>
                 <div class="cal-day-name">อ</div>
                 <div class="cal-day-name">พ</div>
                 <div class="cal-day-name">พฤ</div>
                 <div class="cal-day-name">ศ</div>
-                <div class="cal-day-name">ส</div>
+                <div class="cal-day-name" style="color: var(--primary-green);">ส</div>
             </div>
-
-            <div class="cal-grid" id="calendarDays">
-                <!-- Rendered by JS -->
-            </div>
+            <div class="cal-grid" id="calDaysGrid"></div>
 
             <div class="holiday-list-container">
                 <div class="holiday-list-title">
-                    <span>🎉 วันหยุดประจำเดือน</span>
-                    <span id="currentMonthYearText" style="font-family: 'JetBrains Mono'; color: var(--primary-green);"></span>
+                    <span>รายการวันหยุดประจำเดือน</span>
+                    <span id="holidayCount">0 วัน</span>
                 </div>
-                <div class="holiday-items" id="holidayList">
-                    <!-- Rendered by JS -->
-                </div>
+                <div class="holiday-items" id="holidayItems"></div>
             </div>
         </div>
     </div>
 
-    <!-- SCRIPT -->
     <script>
-        // ----------------------------------------------------
-        // 1. App State & Theme Init
-        // ----------------------------------------------------
-        let currentTab = localStorage.getItem('gosoft_tab') || 'all';
+        // --- 1. SESSION MANAGEMENT (AUTO LOGOUT 3 MINUTES + POPUP 1 MINUTE WARNING) ---
+        const TOTAL_TIMEOUT = 3 * 60 * 1000; // เวลาทั้งหมด 3 นาที
+        const WARN_TIME = 2 * 60 * 1000;     // แสดง เตือนเมื่อผ่านไป 2 นาที (เหลือเวลา 1 นาที)
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const savedTheme = localStorage.getItem('gosoft_theme') || 'dark';
-            document.body.setAttribute('data-theme', savedTheme);
-            document.getElementById('themeBtn').innerText = savedTheme === 'dark' ? '🌙' : '☀️';
+        let sessionCheckerInterval = null;
+        let countdownInterval = null;
 
-            document.querySelectorAll('.task-card').forEach(card => {
-                const titleEl = card.querySelector('.card-title');
-                const descEl = card.querySelector('.card-desc');
-                if (titleEl) card.dataset.rawTitle = titleEl.innerText;
-                if (descEl) card.dataset.rawDesc = descEl.innerText;
-            });
+        function checkSession() {
+            const isLoggedIn = localStorage.getItem("isLoggedIn");
+            const lastActivity = localStorage.getItem("lastActivity");
+            const currentTime = new Date().getTime();
 
-            const savedQuery = localStorage.getItem('gosoft_query') || '';
-            document.getElementById('searchInput').value = savedQuery;
-
-            const activeTabBtn = document.getElementById(`tab-${currentTab}`);
-            if (activeTabBtn) {
-                document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-                activeTabBtn.classList.add('active');
+            if (isLoggedIn !== "true" || !lastActivity) {
+                handleLogout("กรุณาเข้าสู่ระบบก่อนใช้งาน");
+                return;
             }
 
-            filterCards();
-            initYearOptions();
-            initCalendar();
-        });
+            const elapsed = currentTime - parseInt(lastActivity, 10);
 
+            // เมื่อทิ้งไว้ครบ 3 นาที -> Logout ทันที
+            if (elapsed >= TOTAL_TIMEOUT) {
+                handleLogout("เซสชันหมดอายุเนื่องจากไม่ได้ใช้งานเกิน 3 นาที กรุณาเข้าสู่ระบบใหม่");
+                return;
+            }
+
+            // เมื่อทิ้งไว้ครบ 2 นาที -> แสดง Pop-up นับถอยหลัง 60 วินาที
+            if (elapsed >= WARN_TIME) {
+                showTimeoutWarning(Math.ceil((TOTAL_TIMEOUT - elapsed) / 1000));
+            } else {
+                hideTimeoutWarning();
+            }
+        }
+
+        function updateLastActivity() {
+            // อัปเดตเวลาเฉพาะเมื่อไม่ติด Pop-up เตือนอยู่
+            const timeoutModal = document.getElementById("timeoutModal");
+            if (localStorage.getItem("isLoggedIn") === "true" && !timeoutModal.classList.contains("active")) {
+                localStorage.setItem("lastActivity", new Date().getTime().toString());
+            }
+        }
+
+        function showTimeoutWarning(remainingSeconds) {
+            const modal = document.getElementById("timeoutModal");
+            const timerDisplay = document.getElementById("countdownTimer");
+
+            if (!modal.classList.contains("active")) {
+                modal.classList.add("active");
+            }
+
+            timerDisplay.innerText = remainingSeconds;
+        }
+
+        function hideTimeoutWarning() {
+            const modal = document.getElementById("timeoutModal");
+            if (modal.classList.contains("active")) {
+                modal.classList.remove("active");
+            }
+        }
+
+        function resetInactivityTimer() {
+            localStorage.setItem("lastActivity", new Date().getTime().toString());
+            hideTimeoutWarning();
+        }
+
+        function handleLogout(message) {
+            clearInterval(sessionCheckerInterval);
+            localStorage.removeItem("isLoggedIn");
+            localStorage.removeItem("loginUser");
+            localStorage.removeItem("lastActivity");
+            
+            if (message) {
+                alert(message);
+            }
+            window.location.href = "login.html";
+        }
+
+        // --- 2. DARK / LIGHT THEME ---
         function toggleTheme() {
-            const current = document.body.getAttribute('data-theme');
-            const next = current === 'dark' ? 'light' : 'dark';
-            document.body.setAttribute('data-theme', next);
-            localStorage.setItem('gosoft_theme', next);
-            document.getElementById('themeBtn').innerText = next === 'dark' ? '🌙' : '☀️';
-        }
-
-        // ----------------------------------------------------
-        // 2. Modal Calendar Toggle
-        // ----------------------------------------------------
-        function toggleCalendarModal() {
-            const modal = document.getElementById('calModal');
-            modal.classList.toggle('active');
-        }
-
-        function closeModalOnOutside(event) {
-            if (event.target.id === 'calModal') {
-                toggleCalendarModal();
+            const body = document.body;
+            const themeBtn = document.getElementById('themeBtn');
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.setAttribute('data-theme', 'light');
+                themeBtn.textContent = '☀️';
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                themeBtn.textContent = '🌙';
             }
         }
 
-        // ----------------------------------------------------
-        // 3. Filter & Search Logic
-        // ----------------------------------------------------
-        window.addEventListener('keydown', (e) => {
-            const isInputFocused = document.activeElement.tagName === 'INPUT';
+        // --- 3. FILTER & SEARCH CARDS ---
+        let currentTab = 'all';
 
-            if (e.key === 'Escape') {
-                const modal = document.getElementById('calModal');
-                if (modal.classList.contains('active')) modal.classList.remove('active');
-            }
-
-            if ((e.key === '/' || (e.ctrlKey && e.key.toLowerCase() === 'k')) && !isInputFocused) {
-                e.preventDefault();
-                document.getElementById('searchInput').focus();
-            }
-
-            if (!isInputFocused && e.key >= '1' && e.key <= '5') {
-                const targetCard = document.querySelector(`.task-card[data-key="${e.key}"]`);
-                if (targetCard && targetCard.style.display !== 'none') {
-                    const link = targetCard.querySelector('.target-link');
-                    if (link) link.click();
-                }
-            }
-        });
+        function filterTab(category, btn) {
+            currentTab = category;
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            filterCards();
+        }
 
         function filterCards() {
-            const inputEl = document.getElementById('searchInput');
-            const query = inputEl.value.trim().toLowerCase();
+            const input = document.getElementById('searchInput');
+            const query = input.value.toLowerCase().trim();
             const btnClear = document.getElementById('btnClear');
-            const cards = document.querySelectorAll('.card-grid .task-card');
+            const cards = document.querySelectorAll('.task-card');
             let visibleCount = 0;
 
-            localStorage.setItem('gosoft_query', query);
             btnClear.style.display = query.length > 0 ? 'flex' : 'none';
 
             cards.forEach(card => {
-                const category = card.dataset.category;
-                const rawTitle = card.dataset.rawTitle || '';
-                const rawDesc = card.dataset.rawDesc || '';
+                const category = card.getAttribute('data-category');
+                const title = card.querySelector('.card-title').innerText;
+                const desc = card.querySelector('.card-desc').innerText;
+                const key = card.getAttribute('data-key') || '';
 
-                const matchesSearch = rawTitle.toLowerCase().includes(query) || rawDesc.toLowerCase().includes(query);
                 const matchesTab = (currentTab === 'all') || (category === currentTab);
+                const matchesSearch = title.toLowerCase().includes(query) || 
+                                      desc.toLowerCase().includes(query) || 
+                                      key.includes(query);
 
-                if (matchesSearch && matchesTab) {
-                    card.style.display = "flex";
+                if (matchesTab && matchesSearch) {
+                    card.style.display = 'flex';
                     visibleCount++;
-                    highlightText(card.querySelector('.card-title'), rawTitle, query);
-                    highlightText(card.querySelector('.card-desc'), rawDesc, query);
                 } else {
-                    card.style.display = "none";
+                    card.style.display = 'none';
                 }
             });
 
-            document.getElementById('resultCount').innerText = `SHOWING: ${visibleCount} UNITS`;
-            document.getElementById('noResults').style.display = (visibleCount === 0) ? 'block' : 'none';
-        }
-
-        function filterTab(category, btnElement) {
-            currentTab = category;
-            localStorage.setItem('gosoft_tab', category);
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            btnElement.classList.add('active');
-            filterCards();
+            document.getElementById('noResults').style.display = visibleCount === 0 ? 'block' : 'none';
+            document.getElementById('resultCount').innerText = `${visibleCount} ITEMS FOUND`;
         }
 
         function clearSearch() {
-            const inputEl = document.getElementById('searchInput');
-            inputEl.value = '';
+            const input = document.getElementById('searchInput');
+            input.value = '';
             filterCards();
-            inputEl.focus();
+            input.focus();
         }
 
-        function highlightText(element, text, query) {
-            if (!element) return;
-            if (!query) {
-                element.innerHTML = text;
-                return;
+        // --- 4. SHORTCUT KEYS ---
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey && e.key === 'k') || e.key === '/') {
+                e.preventDefault();
+                document.getElementById('searchInput').focus();
             }
-            const regex = new RegExp(`(${escapeRegExp(query)})`, 'gi');
-            element.innerHTML = text.replace(regex, '<mark class="highlight">$1</mark>');
-        }
+        });
 
-        function escapeRegExp(string) {
-            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        }
+        // --- 5. CALENDAR LOGIC ---
+        const thaiHolidays = {
+            "2026-01-01": "วันขึ้นปีใหม่",
+            "2026-03-03": "วันมาฆบูชา",
+            "2026-04-06": "วันพระบาทสมเด็จพระพุทธยอดฟ้าจุฬาโลกฯ",
+            "2026-04-13": "วันสงกรานต์",
+            "2026-04-14": "วันสงกรานต์",
+            "2026-04-15": "วันสงกรานต์",
+            "2026-05-01": "วันแรงงานแห่งชาติ",
+            "2026-05-04": "วันฉัตรมงคล",
+            "2026-05-31": "วันวิสาขบูชา",
+            "2026-06-03": "วันเฉลิมพระชนมพรรษา สมเด็จพระนางเจ้าฯ พระบรมราชินี",
+            "2026-07-28": "วันเฉลิมพระชนมพรรษา พระบาทสมเด็จพระเจ้าอยู่หัว",
+            "2026-07-29": "วันอาสาฬหบูชา",
+            "2026-08-12": "วันแม่แห่งชาติ",
+            "2026-10-13": "วันนวมินทรมหาราช",
+            "2026-10-23": "วันปิยมหาราช",
+            "2026-12-05": "วันพ่อแห่งชาติ",
+            "2026-12-10": "วันรัฐธรรมนูญ",
+            "2026-12-31": "วันสิ้นปี"
+        };
 
-        // ----------------------------------------------------
-        // 4. Dynamic Thai Calendar & Universal Holiday Generator
-        // ----------------------------------------------------
-        const monthNamesThai = [
-            "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
-            "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"
-        ];
+        let currDate = new Date();
 
-        let calDate = new Date();
+        function initCalendarSelects() {
+            const monthSelect = document.getElementById('calMonth');
+            const yearSelect = document.getElementById('calYear');
+            
+            const thaiMonths = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
+            monthSelect.innerHTML = '';
+            thaiMonths.forEach((m, idx) => {
+                monthSelect.innerHTML += `<option value="${idx}">${m}</option>`;
+            });
 
-        function initYearOptions() {
-            const yearSelect = document.getElementById('yearSelect');
             yearSelect.innerHTML = '';
             const currentYear = new Date().getFullYear();
-
-            for (let y = currentYear - 5; y <= currentYear + 10; y++) {
-                const opt = document.createElement('option');
-                opt.value = y;
-                opt.innerText = `พ.ศ. ${y + 543}`;
-                yearSelect.appendChild(opt);
+            for (let y = currentYear - 2; y <= currentYear + 2; y++) {
+                yearSelect.innerHTML += `<option value="${y}">พ.ศ. ${y + 543}</option>`;
             }
-        }
-
-        function initCalendar() {
-            const monthSelect = document.getElementById('monthSelect');
-            monthSelect.innerHTML = '';
-            monthNamesThai.forEach((name, index) => {
-                const opt = document.createElement('option');
-                opt.value = index;
-                opt.innerText = name;
-                monthSelect.appendChild(opt);
-            });
-            renderCalendar();
-        }
-
-        function getThaiHolidays(year) {
-            const holidays = {
-                [`${year}-01-01`]: "วันขึ้นปีใหม่",
-                [`${year}-04-06`]: "วันจักรี",
-                [`${year}-04-13`]: "วันสงกรานต์",
-                [`${year}-04-14`]: "วันสงกรานต์",
-                [`${year}-04-15`]: "วันสงกรานต์",
-                [`${year}-05-01`]: "วันแรงงานแห่งชาติ",
-                [`${year}-05-04`]: "วันฉัตรมงคล",
-                [`${year}-06-03`]: "วันเฉลิมพระชนมพรรษา สมเด็จพระนางเจ้าฯ พระบรมราชินี",
-                [`${year}-07-28`]: "วันเฉลิมพระชนมพรรษา พระบาทสมเด็จพระวชิรเกล้าเจ้าอยู่หัว",
-                [`${year}-08-12`]: "วันแม่แห่งชาติ",
-                [`${year}-10-13`]: "วันนวมินทรมหาราช",
-                [`${year}-10-23`]: "วันปิยมหาราช",
-                [`${year}-12-05`]: "วันพ่อแห่งชาติ",
-                [`${year}-12-10`]: "วันรัฐธรรมนูญ",
-                [`${year}-12-31`]: "วันสิ้นปี"
-            };
-
-            const dynamicHolidays = {};
-            Object.keys(holidays).forEach(dateStr => {
-                dynamicHolidays[dateStr] = holidays[dateStr];
-                const d = new Date(dateStr);
-                const dayOfWeek = d.getDay();
-                
-                if (dayOfWeek === 6) {
-                    const compDate = new Date(d);
-                    compDate.setDate(d.getDate() + 2);
-                    const compKey = formatDateKey(compDate);
-                    dynamicHolidays[compKey] = `ชดเชย${holidays[dateStr]}`;
-                } else if (dayOfWeek === 0) {
-                    const compDate = new Date(d);
-                    compDate.setDate(d.getDate() + 1);
-                    const compKey = formatDateKey(compDate);
-                    dynamicHolidays[compKey] = `ชดเชย${holidays[dateStr]}`;
-                }
-            });
-
-            return dynamicHolidays;
-        }
-
-        function formatDateKey(dateObj) {
-            const y = dateObj.getFullYear();
-            const m = String(dateObj.getMonth() + 1).padStart(2, '0');
-            const d = String(dateObj.getDate()).padStart(2, '0');
-            return `${y}-${m}-${d}`;
         }
 
         function renderCalendar() {
-            const year = calDate.getFullYear();
-            const month = calDate.getMonth();
+            const month = parseInt(document.getElementById('calMonth').value);
+            const year = parseInt(document.getElementById('calYear').value);
             
-            document.getElementById('monthSelect').value = month;
-            document.getElementById('yearSelect').value = year;
-            document.getElementById('currentMonthYearText').innerText = `${monthNamesThai[month]} ${year + 543}`;
+            const grid = document.getElementById('calDaysGrid');
+            const items = document.getElementById('holidayItems');
+            grid.innerHTML = '';
+            items.innerHTML = '';
 
             const firstDay = new Date(year, month, 1).getDay();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
             const today = new Date();
 
-            const calGrid = document.getElementById('calendarDays');
-            calGrid.innerHTML = '';
-
-            const holidays = getThaiHolidays(year);
-            const monthHolidays = [];
-
             for (let i = 0; i < firstDay; i++) {
-                const empty = document.createElement('div');
-                empty.className = 'cal-day empty';
-                calGrid.appendChild(empty);
+                grid.innerHTML += `<div class="cal-day empty"></div>`;
             }
+
+            let monthlyHolidays = 0;
 
             for (let d = 1; d <= daysInMonth; d++) {
-                const dayEl = document.createElement('div');
-                dayEl.className = 'cal-day';
-                dayEl.innerText = d;
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                const isToday = (today.getFullYear() === year && today.getMonth() === month && today.getDate() === d);
+                const holidayName = thaiHolidays[dateStr];
 
-                const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                let classes = 'cal-day';
+                if (isToday) classes += ' today';
+                if (holidayName) classes += ' holiday';
 
-                if (today.getFullYear() === year && today.getMonth() === month && today.getDate() === d) {
-                    dayEl.classList.add('today');
-                }
+                grid.innerHTML += `<div class="${classes}" title="${holidayName || ''}">${d}</div>`;
 
-                if (holidays[dateKey]) {
-                    dayEl.classList.add('holiday');
-                    dayEl.title = holidays[dateKey];
-                    monthHolidays.push({
-                        dateStr: `${d} ${monthNamesThai[month].substring(0, 3)}.`,
-                        name: holidays[dateKey]
-                    });
-                }
-
-                calGrid.appendChild(dayEl);
-            }
-
-            const listEl = document.getElementById('holidayList');
-            listEl.innerHTML = '';
-
-            if (monthHolidays.length === 0) {
-                listEl.innerHTML = `<div style="color: var(--text-muted); font-size: 12px; text-align: center; padding: 10px;">ไม่มีวันหยุดตามประเพณีในเดือนนี้</div>`;
-            } else {
-                monthHolidays.forEach(h => {
-                    const item = document.createElement('div');
-                    item.className = 'holiday-item';
-                    item.innerHTML = `
-                        <span class="holiday-date">${h.dateStr}</span>
-                        <span class="holiday-name" title="${h.name}">${h.name}</span>
+                if (holidayName) {
+                    monthlyHolidays++;
+                    items.innerHTML += `
+                        <div class="holiday-item">
+                            <span class="holiday-date">${d} ${document.getElementById('calMonth').selectedOptions[0].text}</span>
+                            <span class="holiday-name">${holidayName}</span>
+                        </div>
                     `;
-                    listEl.appendChild(item);
-                });
+                }
+            }
+
+            document.getElementById('holidayCount').innerText = `${monthlyHolidays} วัน`;
+            if (monthlyHolidays === 0) {
+                items.innerHTML = `<div style="font-size: 12px; color: var(--text-muted); text-align: center; padding: 10px;">ไม่มีวันหยุดในเดือนนี้</div>`;
             }
         }
 
-        function changeMonth(delta) {
-            calDate.setMonth(calDate.getMonth() + delta);
+        function prevMonth() {
+            let m = parseInt(document.getElementById('calMonth').value) - 1;
+            let y = parseInt(document.getElementById('calYear').value);
+            if (m < 0) { m = 11; y--; }
+            document.getElementById('calMonth').value = m;
+            document.getElementById('calYear').value = y;
             renderCalendar();
         }
 
-        function onDateSelectChange() {
-            const m = parseInt(document.getElementById('monthSelect').value);
-            const y = parseInt(document.getElementById('yearSelect').value);
-            calDate.setFullYear(y, m, 1);
+        function nextMonth() {
+            let m = parseInt(document.getElementById('calMonth').value) + 1;
+            let y = parseInt(document.getElementById('calYear').value);
+            if (m > 11) { m = 0; y++; }
+            document.getElementById('calMonth').value = m;
+            document.getElementById('calYear').value = y;
             renderCalendar();
         }
+
+        function toggleCalendarModal() {
+            const modal = document.getElementById('calModal');
+            modal.classList.toggle('active');
+            if (modal.classList.contains('active')) {
+                document.getElementById('calMonth').value = currDate.getMonth();
+                document.getElementById('calYear').value = currDate.getFullYear();
+                renderCalendar();
+            }
+        }
+
+        function closeModalOnOutside(e) {
+            if (e.target.classList.contains('modal-overlay')) {
+                toggleCalendarModal();
+            }
+        }
+
+        // --- 6. INITIALIZE APP & EVENT LISTENERS ---
+        window.onload = () => {
+            // เช็กสถานะสิทธิ์การเข้าใช้งาน
+            checkSession();
+
+            // แสดงชื่อ User ที่เข้าสู่ระบบ
+            const user = localStorage.getItem("loginUser") || "User";
+            document.getElementById("currentUser").innerText = user.toUpperCase();
+
+            // ตรวจสอบเวลารายวินาที
+            sessionCheckerInterval = setInterval(checkSession, 1000);
+
+            // ดักจับการโต้ตอบเพื่อรีเซ็ตเวลา
+            const userEvents = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
+            userEvents.forEach(eventType => {
+                window.addEventListener(eventType, updateLastActivity, { passive: true });
+            });
+
+            // เริ่มต้น UI
+            initCalendarSelects();
+            filterCards();
+        };
     </script>
 </body>
 </html>
