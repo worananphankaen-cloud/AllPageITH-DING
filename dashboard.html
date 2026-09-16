@@ -1,0 +1,1254 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GOSOFT - IT Hardware Command Center</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-red: #E11D48;
+            --primary-red-hover: #BE123C;
+            --primary-green: #10B981;
+            --primary-green-hover: #059669;
+            --bg-body: #0F172A;
+            --bg-card: rgba(30, 41, 59, 0.7);
+            --bg-card-border: rgba(255, 255, 255, 0.1);
+            --text-main: #F8FAFC;
+            --text-muted: #94A3B8;
+            --border-color: #334155;
+            --shadow-color: rgba(0, 0, 0, 0.4);
+            --glow-color: rgba(16, 185, 129, 0.25);
+            --holiday-color: #EF4444;
+        }
+
+        [data-theme="light"] {
+            --bg-body: #F1F5F9;
+            --bg-card: rgba(255, 255, 255, 0.85);
+            --bg-card-border: rgba(255, 255, 255, 0.8);
+            --text-main: #0F172A;
+            --text-muted: #64748B;
+            --border-color: #E2E8F0;
+            --shadow-color: rgba(0, 0, 0, 0.05);
+            --glow-color: rgba(16, 185, 129, 0.15);
+            --holiday-color: #DC2626;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Prompt', sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 30px 20px;
+            background-image: radial-gradient(circle at 50% 0%, rgba(16, 185, 129, 0.08) 0%, transparent 70%);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Top Header Bar */
+        .header-bar {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            padding: 20px 28px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px var(--shadow-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            border: 1px solid var(--bg-card-border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header-bar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-green), var(--primary-red));
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .brand-title {
+            font-size: 20px;
+            font-weight: 700;
+            line-height: 1.2;
+            letter-spacing: -0.5px;
+        }
+
+        .brand-subtitle {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .icon-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            height: 40px;
+            padding: 0 14px;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .icon-btn:hover {
+            border-color: var(--primary-green);
+            box-shadow: 0 0 12px var(--glow-color);
+            color: var(--primary-green);
+        }
+
+        .btn-logout {
+            border-color: var(--primary-red) !important;
+            color: var(--primary-red) !important;
+        }
+
+        .btn-logout:hover {
+            background: var(--primary-red) !important;
+            color: white !important;
+            box-shadow: 0 0 12px rgba(225, 29, 72, 0.4) !important;
+        }
+
+        .header-badge {
+            background-color: rgba(16, 185, 129, 0.15);
+            color: var(--primary-green);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--primary-green);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--primary-green);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        /* Search & Cmd Bar */
+        .search-wrapper {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .search-input-group {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-input-group input {
+            width: 100%;
+            padding: 16px 140px 16px 52px;
+            font-size: 15px;
+            border-radius: 16px;
+            border: 2px solid var(--border-color);
+            background: var(--bg-card);
+            color: var(--text-main);
+            box-shadow: 0 10px 25px var(--shadow-color);
+            outline: none;
+        }
+
+        .search-input-group input:focus {
+            border-color: var(--primary-green);
+            box-shadow: 0 0 25px var(--glow-color);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 20px;
+            font-size: 18px;
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        .search-controls {
+            position: absolute;
+            right: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-clear {
+            background: var(--border-color);
+            border: none;
+            color: var(--text-muted);
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .btn-clear:hover {
+            background: var(--primary-red);
+            color: white;
+        }
+
+        .shortcut-badge {
+            font-family: 'JetBrains Mono', monospace;
+            background: var(--border-color);
+            color: var(--text-muted);
+            border-radius: 6px;
+            padding: 4px 8px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        /* Filter Tabs */
+        .filter-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 8px 18px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .tab-btn:hover {
+            border-color: var(--primary-green);
+            color: var(--primary-green);
+        }
+
+        .tab-btn.active {
+            background: var(--primary-green);
+            color: white;
+            border-color: var(--primary-green);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+        }
+
+        .tab-btn.active.tab-red {
+            background: var(--primary-red);
+            border-color: var(--primary-red);
+            box-shadow: 0 4px 15px rgba(225, 29, 72, 0.4);
+        }
+
+        .dashboard-header-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .dashboard-title {
+            font-size: 18px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .result-count {
+            font-size: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-muted);
+            background: var(--bg-card);
+            padding: 4px 12px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        /* Task Cards Grid */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        .task-card {
+            background-color: var(--bg-card);
+            backdrop-filter: blur(10px);
+            border-radius: 18px;
+            padding: 24px;
+            box-shadow: 0 4px 20px var(--shadow-color);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .task-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 35px var(--glow-color);
+            border-color: var(--primary-green);
+        }
+
+        .task-card.accent-red:hover {
+            box-shadow: 0 15px 35px rgba(225, 29, 72, 0.25);
+            border-color: var(--primary-red);
+        }
+
+        .task-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background-color: var(--primary-green);
+        }
+
+        .task-card.accent-red::before {
+            background-color: var(--primary-red);
+        }
+
+        .key-num {
+            position: absolute;
+            top: 18px;
+            right: 18px;
+            font-family: 'JetBrains Mono', monospace;
+            background: var(--border-color);
+            color: var(--text-muted);
+            font-size: 11px;
+            font-weight: bold;
+            padding: 2px 8px;
+            border-radius: 6px;
+            border: 1px solid var(--bg-card-border);
+        }
+
+        .card-header-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 14px;
+        }
+
+        .card-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .card-title {
+            font-size: 17px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            padding-right: 30px;
+        }
+
+        .card-desc {
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-bottom: 20px;
+            flex-grow: 1;
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid var(--border-color);
+            padding-top: 16px;
+        }
+
+        .badge {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 30px;
+        }
+
+        .badge-green {
+            background-color: rgba(16, 185, 129, 0.15);
+            color: var(--primary-green);
+        }
+
+        .badge-disabled {
+            background-color: rgba(148, 163, 184, 0.1);
+            color: var(--text-muted);
+        }
+
+        .btn-open {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            background-color: var(--primary-green);
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-open:hover {
+            background-color: var(--primary-green-hover);
+            transform: translateX(2px);
+        }
+
+        .btn-open.btn-red {
+            background-color: var(--primary-red);
+            box-shadow: 0 4px 12px rgba(225, 29, 72, 0.3);
+        }
+
+        .btn-open.btn-red:hover {
+            background-color: var(--primary-red-hover);
+        }
+
+        .task-card.disabled {
+            opacity: 0.5;
+        }
+
+        .btn-open.disabled {
+            background-color: var(--border-color);
+            color: var(--text-muted);
+            box-shadow: none;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .no-results {
+            display: none;
+            text-align: center;
+            padding: 50px 20px;
+            background: var(--bg-card);
+            border-radius: 18px;
+            border: 1px dashed var(--border-color);
+        }
+
+        /* MODALS */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.25s ease, visibility 0.25s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* TIMEOUT WARN POPUP */
+        .timeout-box {
+            background: var(--bg-body);
+            border: 1px solid var(--primary-red);
+            border-radius: 20px;
+            padding: 30px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(225, 29, 72, 0.3);
+            transform: scale(0.95);
+            transition: transform 0.25s ease;
+        }
+
+        .modal-overlay.active .timeout-box {
+            transform: scale(1);
+        }
+
+        .countdown-num {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 48px;
+            font-weight: 700;
+            color: var(--primary-red);
+            margin: 15px 0;
+        }
+
+        .btn-keep-login {
+            background: var(--primary-green);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .btn-keep-login:hover {
+            background: var(--primary-green-hover);
+        }
+
+        /* CALENDAR WIDGET */
+        .calendar-widget {
+            background: var(--bg-body);
+            border-radius: 20px;
+            padding: 24px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 20px 50px var(--shadow-color);
+            width: 380px;
+        }
+
+        .cal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .cal-title {
+            font-size: 16px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .cal-controls {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .cal-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            border-radius: 8px;
+            width: 28px;
+            height: 28px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .cal-btn:hover {
+            border-color: var(--primary-green);
+            color: var(--primary-green);
+        }
+
+        .cal-select {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            border-radius: 8px;
+            padding: 2px 6px;
+            font-size: 12px;
+            outline: none;
+        }
+
+        .cal-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .cal-day-name {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            padding-bottom: 6px;
+        }
+
+        .cal-day {
+            font-size: 12px;
+            padding: 8px 0;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid transparent;
+            position: relative;
+        }
+
+        .cal-day.empty {
+            background: transparent;
+        }
+
+        .cal-day.today {
+            border-color: var(--primary-green);
+            background: rgba(16, 185, 129, 0.15);
+            font-weight: bold;
+            color: var(--primary-green);
+        }
+
+        .cal-day.holiday {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--holiday-color);
+            font-weight: bold;
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .cal-day.holiday::after {
+            content: '';
+            position: absolute;
+            bottom: 2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background-color: var(--holiday-color);
+        }
+
+        .holiday-list-container {
+            margin-top: 16px;
+            border-top: 1px dashed var(--border-color);
+            padding-top: 12px;
+        }
+
+        .holiday-list-title {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .holiday-items {
+            max-height: 140px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .holiday-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 6px 8px;
+            border-radius: 8px;
+            border-left: 3px solid var(--holiday-color);
+        }
+
+        .holiday-date {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: bold;
+            color: var(--holiday-color);
+            white-space: nowrap;
+        }
+
+        .holiday-name {
+            color: var(--text-main);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .btn-close-modal {
+            background: var(--border-color);
+            border: none;
+            color: var(--text-muted);
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .btn-close-modal:hover {
+            background: var(--primary-red);
+            color: white;
+        }
+    </style>
+</head>
+<body data-theme="dark">
+
+    <div class="container">
+        <!-- Header Bar -->
+        <div class="header-bar">
+            <div class="logo-container">
+                <svg width="140" height="36" viewBox="0 0 200 50" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="200" height="50" rx="10" fill="#E11D48"/>
+                    <text x="18" y="35" font-family="'Prompt', sans-serif" font-size="28" font-weight="bold" fill="#FFFFFF">GOSOFT</text>
+                    <circle cx="168" cy="25" r="7" fill="#10B981"/>
+                </svg>
+                <div>
+                    <div class="brand-title">Work Dashboard ITHardware By DING NORT BOOM</div>
+                    <div class="brand-subtitle">Gosoft (Thailand) Co., Ltd.</div>
+                </div>
+            </div>
+            <div class="header-controls">
+                <button class="icon-btn" onclick="toggleCalendarModal()" title="เปิดปฏิทินวันหยุด">📅 วันหยุด</button>
+                <button class="icon-btn" id="themeBtn" onclick="toggleTheme()" title="สลับโหมด มืด/สว่าง">🌙</button>
+                <button class="icon-btn btn-logout" onclick="handleLogout()" title="ออกจากระบบ">🚪 ออกจากระบบ</button>
+                <div class="header-badge">
+                    <span class="status-dot"></span> User: <span id="currentUser" style="margin-left: 4px;">User</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Content -->
+        <div class="dashboard-content">
+            <!-- SEARCH BAR -->
+            <div class="search-wrapper">
+                <div class="search-input-group">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="searchInput" placeholder="พิมพ์คำค้นหา... (กด '/' หรือ 'Ctrl+K' เพื่อโฟกัส)" onkeyup="filterCards()">
+                    <div class="search-controls">
+                        <button class="btn-clear" id="btnClear" onclick="clearSearch()">✕</button>
+                        <span class="shortcut-badge">CTRL + K</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FILTER TABS -->
+            <div class="filter-tabs">
+                <button class="tab-btn active" id="tab-all" onclick="filterTab('all', this)">⚡ ทั้งหมด</button>
+                <button class="tab-btn" id="tab-green" onclick="filterTab('green', this)">🟢 งานทั่วไป / รายงาน</button>
+                <button class="tab-btn tab-red" id="tab-red" onclick="filterTab('red', this)">🔴 เคสวิกฤต / ตรวจสอบ</button>
+                <button class="tab-btn" id="tab-disabled" onclick="filterTab('disabled', this)">⚙️ พัฒนาเพิ่มเติม</button>
+            </div>
+
+            <!-- DASHBOARD TITLE -->
+            <div class="dashboard-header-flex">
+                <div class="dashboard-title">
+                    📌 รายการงานระบบปฏิบัติการ
+                </div>
+                <div class="result-count" id="resultCount">SYSTEM READY</div>
+            </div>
+
+            <!-- CARDS GRID -->
+            <div class="card-grid" id="cardGrid">
+                
+                <!-- Card 1 -->
+                <div class="task-card accent-red" data-category="red" data-key="1">
+                    <span class="key-num">[1]</span>
+                    <div>
+                        <div class="card-header-wrapper">
+                            <div class="card-icon">🚨</div>
+                        </div>
+                        <div class="card-title">จัดทำไฟล์ EMP</div>
+                        <div class="card-desc">
+                            จัดทำไฟล์ EMP สำหรับบันทึกและตรวจสอบข้อมูลพนักงาน
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span class="badge badge-green">พร้อมใช้งาน</span>
+                        <a href="indexGemfile-Emp.html" target="_blank" class="btn-open btn-red target-link">เปิดใช้งาน ➔</a>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="task-card accent-red" data-category="red" data-key="2">
+                    <span class="key-num">[2]</span>
+                    <div>
+                        <div class="card-header-wrapper">
+                            <div class="card-icon">🚨</div>
+                        </div>
+                        <div class="card-title">INCIDENT</div>
+                        <div class="card-desc">
+                            ระบบจัดการเคสและปิดเคส Incident ประจำวันของระบบหน้าร้านและอุปกรณ์
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span class="badge badge-green">พร้อมใช้งาน</span>
+                        <a href="https://itsm.cpall.co.th/incidents" target="_blank" class="btn-open btn-red target-link">เปิดใช้งาน ➔</a>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="task-card" data-category="green" data-key="3">
+                    <span class="key-num">[3]</span>
+                    <div>
+                        <div class="card-header-wrapper">
+                            <div class="card-icon">📊</div>
+                        </div>
+                        <div class="card-title">ช่วยชนข้อมูล Excel v.1</div>
+                        <div class="card-desc">
+                            เครื่องมือช่วยเปรียบเทียบและกระทบยอดข้อมูลจากไฟล์ Excel
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span class="badge badge-green">พร้อมใช้งาน</span>
+                        <a href="index-match-tool.html" class="btn-open target-link">เปิดใช้งาน ➔</a>
+                    </div>
+                </div>
+
+                <!-- Card 4 -->
+                <div class="task-card accent-red" data-category="red" data-key="4">
+                    <span class="key-num">[4]</span>
+                    <div>
+                        <div class="card-header-wrapper">
+                            <div class="card-icon">🖥️</div>
+                        </div>
+                        <div class="card-title">เช็คลิสต์ เครื่องทดสอบ</div>
+                        <div class="card-desc">
+                            แบบฟอร์มตรวจสอบและบันทึกสถานะการ Set เครื่องทดสอบฮาร์ดแวร์บน SharePoint
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span class="badge badge-green">พร้อมใช้งาน</span>
+                        <a href="https://cpallgroup.sharepoint.com/:x:/r/sites/ithardwarestoresupportunit/Shared%20Documents/WorkDesktop/Set%E0%B9%80%E0%B8%84%E0%B8%A3%E0%B8%B7%E0%B9%88%E0%B8%AD%E0%B8%87/Set%20%E0%B9%80%E0%B8%84%E0%B8%A3%E0%B8%B7%E0%B9%88%E0%B8%AD%E0%B8%87.xlsx?d=wcf799ebba1c24e55a11fec66ef543e10&csf=1&web=1&e=7BuHBm" target="_blank" class="btn-open btn-red target-link">เปิดใช้งาน ➔</a>
+                    </div>
+                </div>
+
+                <!-- Card 5 -->
+                <div class="task-card" data-category="green" data-key="5">
+                    <span class="key-num">[5]</span>
+                    <div>
+                        <div class="card-header-wrapper">
+                            <div class="card-icon">📖</div>
+                        </div>
+                        <div class="card-title">คู่มือ</div>
+                        <div class="card-desc">
+                            คู่มือการปฏิบัติงานสำหรับช่างฮาร์ดแวร์และเจ้าหน้าที่เทคนิค
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span class="badge badge-green">พร้อมใช้งาน</span>
+                        <a href="คู่มือ.html" class="btn-open target-link">เปิดใช้งาน ➔</a>
+                    </div>
+                </div>
+
+                <!-- Card FCR -->
+                <div class="task-card accent-red" data-category="red">
+                    <div>
+                        <div class="card-header-wrapper">
+                            <div class="card-icon">🚨</div>
+                        </div>
+                        <div class="card-title">FCR</div>
+                        <div class="card-desc">
+                            ระบบบันทึกและติดตาม First Contact Resolution
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span class="badge badge-green">พร้อมใช้งาน</span>
+                        <a href="fcr.html" target="_blank" class="btn-open btn-red target-link">เปิดใช้งาน ➔</a>
+                    </div>
+                </div>
+
+                <!-- Card Disabled -->
+                <div class="task-card disabled" data-category="disabled">
+                    <div>
+                        <div class="card-header-wrapper">
+                            <div class="card-icon">⚙️</div>
+                        </div>
+                        <div class="card-title">ระบบสำรองในอนาคต</div>
+                        <div class="card-desc">
+                            พื้นที่รองรับฟังก์ชันการทำงานใหม่ๆ ที่จะพัฒนาเพิ่มเติมในอนาคต
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span class="badge badge-disabled">Coming Soon</span>
+                        <a href="#" class="btn-open disabled">ปิดอยู่</a>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- NO RESULTS -->
+            <div class="no-results" id="noResults">
+                <div style="font-size: 40px; margin-bottom: 10px;">⚠️</div>
+                <h3>ไม่พบข้อมูลที่ตรงกับคำค้นหา</h3>
+                <p style="color: var(--text-muted); font-size: 13px; margin-top: 4px;">ลองค้นหาด้วยคีย์เวิร์ดอื่น หรือกดปุ่มล้างคำค้นหา</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- TIMEOUT WARNING POPUP -->
+    <div class="modal-overlay" id="timeoutModal">
+        <div class="timeout-box">
+            <div style="font-size: 40px; margin-bottom: 10px;">⚠️</div>
+            <h3 style="font-size: 18px; font-weight: 700;">ระบบกำลังจะหมดอายุ!</h3>
+            <p style="font-size: 13px; color: var(--text-muted); margin-top: 6px;">คุณไม่ได้ใช้งานระบบเป็นเวลานาน ระบบจะ Logout อัตโนมัติใน</p>
+            <div class="countdown-num" id="countdownTimer">60</div>
+            <button class="btn-keep-login" onclick="resetInactivityTimer()">อยู่ใช้งานระบบต่อ ➔</button>
+        </div>
+    </div>
+
+    <!-- CALENDAR MODAL POPUP -->
+    <div class="modal-overlay" id="calModal" onclick="closeModalOnOutside(event)">
+        <div class="calendar-widget">
+            <div class="cal-header">
+                <div class="cal-title">📅 ปฏิทินวันหยุดไทย</div>
+                <button class="btn-close-modal" onclick="toggleCalendarModal()">✕</button>
+            </div>
+            <div class="cal-controls">
+                <select id="calMonth" class="cal-select" onchange="renderCalendar()"></select>
+                <select id="calYear" class="cal-select" onchange="renderCalendar()"></select>
+                <button class="cal-btn" onclick="prevMonth()">◄</button>
+                <button class="cal-btn" onclick="nextMonth()">►</button>
+            </div>
+            <div class="cal-grid">
+                <div class="cal-day-name" style="color: var(--holiday-color);">อา</div>
+                <div class="cal-day-name">จ</div>
+                <div class="cal-day-name">อ</div>
+                <div class="cal-day-name">พ</div>
+                <div class="cal-day-name">พฤ</div>
+                <div class="cal-day-name">ศ</div>
+                <div class="cal-day-name" style="color: var(--primary-green);">ส</div>
+            </div>
+            <div class="cal-grid" id="calDaysGrid"></div>
+
+            <div class="holiday-list-container">
+                <div class="holiday-list-title">
+                    <span>รายการวันหยุดประจำเดือน</span>
+                    <span id="holidayCount">0 วัน</span>
+                </div>
+                <div class="holiday-items" id="holidayItems"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. SESSION MANAGEMENT (AUTO LOGOUT 3 MINUTES + POPUP 1 MINUTE WARNING) ---
+        const TOTAL_TIMEOUT = 3 * 60 * 1000; // เวลาทั้งหมด 3 นาที
+        const WARN_TIME = 2 * 60 * 1000;     // แสดง เตือนเมื่อผ่านไป 2 นาที (เหลือเวลา 1 นาที)
+
+        let sessionCheckerInterval = null;
+        let countdownInterval = null;
+
+        function checkSession() {
+            const isLoggedIn = localStorage.getItem("isLoggedIn");
+            const lastActivity = localStorage.getItem("lastActivity");
+            const currentTime = new Date().getTime();
+
+            if (isLoggedIn !== "true" || !lastActivity) {
+                handleLogout("กรุณาเข้าสู่ระบบก่อนใช้งาน");
+                return;
+            }
+
+            const elapsed = currentTime - parseInt(lastActivity, 10);
+
+            // เมื่อทิ้งไว้ครบ 3 นาที -> Logout ทันที
+            if (elapsed >= TOTAL_TIMEOUT) {
+                handleLogout("เซสชันหมดอายุเนื่องจากไม่ได้ใช้งานเกิน 3 นาที กรุณาเข้าสู่ระบบใหม่");
+                return;
+            }
+
+            // เมื่อทิ้งไว้ครบ 2 นาที -> แสดง Pop-up นับถอยหลัง 60 วินาที
+            if (elapsed >= WARN_TIME) {
+                showTimeoutWarning(Math.ceil((TOTAL_TIMEOUT - elapsed) / 1000));
+            } else {
+                hideTimeoutWarning();
+            }
+        }
+
+        function updateLastActivity() {
+            // อัปเดตเวลาเฉพาะเมื่อไม่ติด Pop-up เตือนอยู่
+            const timeoutModal = document.getElementById("timeoutModal");
+            if (localStorage.getItem("isLoggedIn") === "true" && !timeoutModal.classList.contains("active")) {
+                localStorage.setItem("lastActivity", new Date().getTime().toString());
+            }
+        }
+
+        function showTimeoutWarning(remainingSeconds) {
+            const modal = document.getElementById("timeoutModal");
+            const timerDisplay = document.getElementById("countdownTimer");
+
+            if (!modal.classList.contains("active")) {
+                modal.classList.add("active");
+            }
+
+            timerDisplay.innerText = remainingSeconds;
+        }
+
+        function hideTimeoutWarning() {
+            const modal = document.getElementById("timeoutModal");
+            if (modal.classList.contains("active")) {
+                modal.classList.remove("active");
+            }
+        }
+
+        function resetInactivityTimer() {
+            localStorage.setItem("lastActivity", new Date().getTime().toString());
+            hideTimeoutWarning();
+        }
+
+        function handleLogout(message) {
+            clearInterval(sessionCheckerInterval);
+            localStorage.removeItem("isLoggedIn");
+            localStorage.removeItem("loginUser");
+            localStorage.removeItem("lastActivity");
+            
+            if (message) {
+                alert(message);
+            }
+            window.location.href = "index.html";
+        }
+
+        // --- 2. DARK / LIGHT THEME ---
+        function toggleTheme() {
+            const body = document.body;
+            const themeBtn = document.getElementById('themeBtn');
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.setAttribute('data-theme', 'light');
+                themeBtn.textContent = '☀️';
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                themeBtn.textContent = '🌙';
+            }
+        }
+
+        // --- 3. FILTER & SEARCH CARDS ---
+        let currentTab = 'all';
+
+        function filterTab(category, btn) {
+            currentTab = category;
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            filterCards();
+        }
+
+        function filterCards() {
+            const input = document.getElementById('searchInput');
+            const query = input.value.toLowerCase().trim();
+            const btnClear = document.getElementById('btnClear');
+            const cards = document.querySelectorAll('.task-card');
+            let visibleCount = 0;
+
+            btnClear.style.display = query.length > 0 ? 'flex' : 'none';
+
+            cards.forEach(card => {
+                const category = card.getAttribute('data-category');
+                const title = card.querySelector('.card-title').innerText;
+                const desc = card.querySelector('.card-desc').innerText;
+                const key = card.getAttribute('data-key') || '';
+
+                const matchesTab = (currentTab === 'all') || (category === currentTab);
+                const matchesSearch = title.toLowerCase().includes(query) || 
+                                      desc.toLowerCase().includes(query) || 
+                                      key.includes(query);
+
+                if (matchesTab && matchesSearch) {
+                    card.style.display = 'flex';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            document.getElementById('noResults').style.display = visibleCount === 0 ? 'block' : 'none';
+            document.getElementById('resultCount').innerText = `${visibleCount} ITEMS FOUND`;
+        }
+
+        function clearSearch() {
+            const input = document.getElementById('searchInput');
+            input.value = '';
+            filterCards();
+            input.focus();
+        }
+
+        // --- 4. SHORTCUT KEYS ---
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey && e.key === 'k') || e.key === '/') {
+                e.preventDefault();
+                document.getElementById('searchInput').focus();
+            }
+        });
+
+        // --- 5. CALENDAR LOGIC ---
+        const thaiHolidays = {
+            "2026-01-01": "วันขึ้นปีใหม่",
+            "2026-03-03": "วันมาฆบูชา",
+            "2026-04-06": "วันพระบาทสมเด็จพระพุทธยอดฟ้าจุฬาโลกฯ",
+            "2026-04-13": "วันสงกรานต์",
+            "2026-04-14": "วันสงกรานต์",
+            "2026-04-15": "วันสงกรานต์",
+            "2026-05-01": "วันแรงงานแห่งชาติ",
+            "2026-05-04": "วันฉัตรมงคล",
+            "2026-05-31": "วันวิสาขบูชา",
+            "2026-06-03": "วันเฉลิมพระชนมพรรษา สมเด็จพระนางเจ้าฯ พระบรมราชินี",
+            "2026-07-28": "วันเฉลิมพระชนมพรรษา พระบาทสมเด็จพระเจ้าอยู่หัว",
+            "2026-07-29": "วันอาสาฬหบูชา",
+            "2026-08-12": "วันแม่แห่งชาติ",
+            "2026-10-13": "วันนวมินทรมหาราช",
+            "2026-10-23": "วันปิยมหาราช",
+            "2026-12-05": "วันพ่อแห่งชาติ",
+            "2026-12-10": "วันรัฐธรรมนูญ",
+            "2026-12-31": "วันสิ้นปี"
+        };
+
+        let currDate = new Date();
+
+        function initCalendarSelects() {
+            const monthSelect = document.getElementById('calMonth');
+            const yearSelect = document.getElementById('calYear');
+            
+            const thaiMonths = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
+            monthSelect.innerHTML = '';
+            thaiMonths.forEach((m, idx) => {
+                monthSelect.innerHTML += `<option value="${idx}">${m}</option>`;
+            });
+
+            yearSelect.innerHTML = '';
+            const currentYear = new Date().getFullYear();
+            for (let y = currentYear - 2; y <= currentYear + 2; y++) {
+                yearSelect.innerHTML += `<option value="${y}">พ.ศ. ${y + 543}</option>`;
+            }
+        }
+
+        function renderCalendar() {
+            const month = parseInt(document.getElementById('calMonth').value);
+            const year = parseInt(document.getElementById('calYear').value);
+            
+            const grid = document.getElementById('calDaysGrid');
+            const items = document.getElementById('holidayItems');
+            grid.innerHTML = '';
+            items.innerHTML = '';
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const today = new Date();
+
+            for (let i = 0; i < firstDay; i++) {
+                grid.innerHTML += `<div class="cal-day empty"></div>`;
+            }
+
+            let monthlyHolidays = 0;
+
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                const isToday = (today.getFullYear() === year && today.getMonth() === month && today.getDate() === d);
+                const holidayName = thaiHolidays[dateStr];
+
+                let classes = 'cal-day';
+                if (isToday) classes += ' today';
+                if (holidayName) classes += ' holiday';
+
+                grid.innerHTML += `<div class="${classes}" title="${holidayName || ''}">${d}</div>`;
+
+                if (holidayName) {
+                    monthlyHolidays++;
+                    items.innerHTML += `
+                        <div class="holiday-item">
+                            <span class="holiday-date">${d} ${document.getElementById('calMonth').selectedOptions[0].text}</span>
+                            <span class="holiday-name">${holidayName}</span>
+                        </div>
+                    `;
+                }
+            }
+
+            document.getElementById('holidayCount').innerText = `${monthlyHolidays} วัน`;
+            if (monthlyHolidays === 0) {
+                items.innerHTML = `<div style="font-size: 12px; color: var(--text-muted); text-align: center; padding: 10px;">ไม่มีวันหยุดในเดือนนี้</div>`;
+            }
+        }
+
+        function prevMonth() {
+            let m = parseInt(document.getElementById('calMonth').value) - 1;
+            let y = parseInt(document.getElementById('calYear').value);
+            if (m < 0) { m = 11; y--; }
+            document.getElementById('calMonth').value = m;
+            document.getElementById('calYear').value = y;
+            renderCalendar();
+        }
+
+        function nextMonth() {
+            let m = parseInt(document.getElementById('calMonth').value) + 1;
+            let y = parseInt(document.getElementById('calYear').value);
+            if (m > 11) { m = 0; y++; }
+            document.getElementById('calMonth').value = m;
+            document.getElementById('calYear').value = y;
+            renderCalendar();
+        }
+
+        function toggleCalendarModal() {
+            const modal = document.getElementById('calModal');
+            modal.classList.toggle('active');
+            if (modal.classList.contains('active')) {
+                document.getElementById('calMonth').value = currDate.getMonth();
+                document.getElementById('calYear').value = currDate.getFullYear();
+                renderCalendar();
+            }
+        }
+
+        function closeModalOnOutside(e) {
+            if (e.target.classList.contains('modal-overlay')) {
+                toggleCalendarModal();
+            }
+        }
+
+        // --- 6. INITIALIZE APP & EVENT LISTENERS ---
+        window.onload = () => {
+            // เช็กสถานะสิทธิ์การเข้าใช้งาน
+            checkSession();
+
+            // แสดงชื่อ User ที่เข้าสู่ระบบ
+            const user = localStorage.getItem("loginUser") || "User";
+            document.getElementById("currentUser").innerText = user.toUpperCase();
+
+            // ตรวจสอบเวลารายวินาที
+            sessionCheckerInterval = setInterval(checkSession, 1000);
+
+            // ดักจับการโต้ตอบเพื่อรีเซ็ตเวลา
+            const userEvents = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
+            userEvents.forEach(eventType => {
+                window.addEventListener(eventType, updateLastActivity, { passive: true });
+            });
+
+            // เริ่มต้น UI
+            initCalendarSelects();
+            filterCards();
+        };
+    </script>
+</body>
+</html>
